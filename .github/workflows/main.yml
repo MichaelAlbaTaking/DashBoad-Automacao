@@ -1,0 +1,22 @@
+name: Deploy Dashboard
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject JIRA_TOKEN into index.html
+        run: |
+          sed -i "s|const TOKEN = \"\"|const TOKEN = \"${{ secrets.JIRA_TOKEN }}\"|" index.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
