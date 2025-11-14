@@ -1,21 +1,13 @@
 name: Deploy Dashboard
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
+on: [push, workflow_dispatch]
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Inject JIRA_TOKEN safely
-        run: |
-          ESCAPED_TOKEN=$(printf '%s' '${{ secrets.JIRA_TOKEN }}' | jq -R @json)
-          sed -i "s|const TOKEN = \".*\"|const TOKEN = $ESCAPED_TOKEN;|" index.html
-
-      - name: Deploy to GitHub Pages
+      - name: Inject JIRA_TOKEN
+        run: sed -i "s|const TOKEN = \"\"|const TOKEN = \"${{ secrets.JIRA_TOKEN }}\"|" index.html
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
