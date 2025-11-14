@@ -1,5 +1,4 @@
 name: Deploy Dashboard
-
 on:
   push:
     branches: [ main ]
@@ -11,9 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inject JIRA_TOKEN into index.html
+      - name: Inject JIRA_TOKEN safely into index.html
         run: |
-          sed -i "s|const TOKEN = \"\"|const TOKEN = \"${{ secrets.JIRA_TOKEN }}\"|" index.html
+          # Converte o token para JSON string (escapa automaticamente)
+          ESCAPED_TOKEN=$(jq -r --slurpfile token <(echo '${{ secrets.JIRA_TOKEN }}') '$token[0] | @json' <<< "")
+          
+          # Substitui com segurança
+          sed -i "s|const TOKEN = \".*\"|const TOKEN = $ESCAPED_TOKEN|" index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
