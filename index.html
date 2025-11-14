@@ -623,16 +623,28 @@
         fields: "key,summary,status",
         maxResults: 200
       });
-
-      const url = `${base}?${params}`;
-      const proxyUrl = `${PROXY}?url=${encodeURIComponent(url).replace(/%20/g, '+')}`;
-
+    
+      // CORRETO: Codificar apenas os parâmetros, NÃO a URL inteira
+      const encodedParams = params.toString().replace(/\+/g, '%20');
+      const targetUrl = `${base}?${encodedParams}`;
+      const proxyUrl = `${PROXY}?url=${encodeURIComponent(targetUrl)}`;
+    
+      console.log("Proxy URL:", proxyUrl); // DEBUG
+    
       const response = await fetch(proxyUrl);
-
+    
       if (!response.ok) {
-        const text = await response.text().catch(() => 'Erro desconhecido');
-        throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+        const text = await response.text().catch(() => '');
+        throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
       }
+    
+      const json = await response.json();
+      return (json.issues || []).map(i => ({
+        key: i.key,
+        nome: i.fields.summary || i.key,
+        status: i.fields.status?.name || "Desconhecido"
+      }));
+    }
 
       const json = await response.json();
       return (json.issues || []).map(i => ({
