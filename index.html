@@ -140,7 +140,7 @@
 </div>
 
 <script>
-    // SEU WORKER COMO PROXY (SEGURANÇA TOTAL)
+    // SEU WORKER (TOKEN PROTEGIDO NO CLOUDFLARE)
     const PROXY = "https://jira-proxy.michael-pereira.workers.dev";
     const JIRA_BASE = "https://idea-maker.atlassian.net/browse";
 
@@ -469,7 +469,7 @@
               clone.stats.total = cenariosFiltrados.length;
               clone.stats.pass = cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
               clone.stats.fail = cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
-              clone.stats.perc = clone.stats.total > 0 ? Math.round((( clone.stats.pass / clone.stats.total) * 100) : 0;
+              clone.stats.perc = clone.stats.total > 0 ? Math.round((clone.stats.pass / clone.stats.total) * 100) : 0;
               modulosFiltrados.push(clone);
             }
           });
@@ -500,7 +500,7 @@
                 <div class="stat" style="color:#10b981">Pass: ${modulo.stats.pass}</div>
                 <div class="stat" style="color:#ef4444">Fail: ${modulo.stats.fail}</div>
                 <div class="stat">Aprovação: ${modulo.stats.perc}%</div>
-              </driv>
+              </div>
               <div class="progress"><div class="bar" style="width:${modulo.stats.perc}%"></div></div>
               <button class="btn-cenarios" onclick="abrirModalFiltrado(${JSON.stringify(globalIndex).replace(/"/g, '&quot;')})">
                 Ver cenários
@@ -615,7 +615,7 @@
       return issues.map(i => ({ key: i.key, nome: i.nome }));
     }
 
-    // NOVA FUNÇÃO: Usa seu Worker como proxy (sem token no frontend)
+    // FUNÇÃO CORRIGIDA: Usa seu Worker corretamente
     async function buscarJQL(jql) {
       const base = "https://idea-maker.atlassian.net/rest/api/3/search";
       const params = new URLSearchParams({
