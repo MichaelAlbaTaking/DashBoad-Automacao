@@ -617,7 +617,7 @@
 
     // FUNÇÃO CORRIGIDA: Usa seu Worker corretamente
     async function buscarJQL(jql) {
-      const base = "https://idea-maker.atlassian.net/rest/api/3/search";
+      const base = "https://idea-maker.atlassian.net/rest/api/3/search/jql";
       const params = new URLSearchParams({
         jql: jql,
         fields: "key,summary,status",
