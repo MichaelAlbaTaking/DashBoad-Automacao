@@ -625,7 +625,7 @@
       });
 
       const url = `${base}?${params}`;
-      const proxyUrl = `${PROXY}?url=${encodeURIComponent(url)}`;
+      const proxyUrl = `${PROXY}?url=${encodeURIComponent(url).replace(/%20/g, '+')}`;
 
       const response = await fetch(proxyUrl);
 
