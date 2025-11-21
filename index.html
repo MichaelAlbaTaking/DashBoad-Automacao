@@ -4,145 +4,231 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Dashboard de Testes - Idea Cash</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* ================== VARIÁVEIS E BASE ================== */
         :root {
-          --bg: #0f172a;
-          --card: #1e293b;
+          --bg: #0f0b18; /* Fundo mais escuro/roxo profundo */
+          --bg-sidebar: #191428; /* Fundo da sidebar */
+          --card: #1e182e; /* Fundo dos cards */
           --text: #e2e8f0;
           --text-muted: #94a3b8;
-          --primary: #3b82f6;
+          --primary: #8a2be2; /* Roxo principal para destaque */
+          --primary-light: #8a2be2;
           --success: #10b981;
           --danger: #ef4444;
           --border: #334155;
+          --highlight-gradient: linear-gradient(90deg, #8a2be2, #47f7ff); /* Gradiente neon */
         }
 
+        /* Corrigido: CSS para estabilidade de layout 100% da tela */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; }
-        .container { max-width: 1300px; margin: auto; background: var(--card); padding: 32px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        html, body { height: 100%; overflow: hidden; } /* body não rola, o main-container rola */
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; }
 
-        h1 { text-align: center; color: white; font-size: 2em; margin-bottom: 8px; font-weight: 700; }
-        .subtitle { text-align: center; color: var(--text-muted); font-size: 0.95em; margin-bottom: 24px; }
+        /* ================== SIDEBAR (Menu Lateral) ================== */
+        #sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            padding: 24px 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+        .logo { font-size: 1.5em; font-weight: 800; color: white; padding: 0 24px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+        .nav-link {
+            padding: 14px 24px;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+        .nav-link:hover { background: rgba(138, 43, 226, 0.1); color: var(--text); }
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+            border-left: 5px solid #47f7ff;
+            padding-left: 19px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .nav-group-title { color: var(--text-muted); opacity: 0.7; font-size: 0.8em; padding: 10px 24px 5px; text-transform: uppercase; font-weight: 700; margin-top: 15px; }
 
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
-        .input-group { display: flex; gap: 12px; flex: 1; min-width: 300px; }
-        .input-raiz { padding: 14px 18px; font-size: 1.1em; background: #334155; border: 1px solid var(--border); border-radius: 12px; color: white; width: 240px; transition: all 0.3s; }
-        .input-raiz:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
-        .input-raiz::placeholder { color: #94a3b8; }
-
-        .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
-        .btn:hover { background: #2563eb; transform: translateY(-1px); }
-
-        .filtro { display: flex; gap: 10px; }
-        .filtro-btn { background: #334155; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
+        /* Filtros na Sidebar */
+        .filtro-btn { background: #334155; color: var(--text-muted); border: 1px solid var(--border); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85em; transition: all 0.3s; width: 33.3%; }
         .filtro-btn.active { background: var(--primary); color: white; border: none; }
-        .filtro-btn:hover:not(.active) { background: #475569; border-color: var(--primary); }
+        .filtro-btn-group { display: flex; gap: 8px; }
 
-        .abas-container { display: flex; gap: 12px; margin-bottom: 24px; justify-content: center; flex-wrap: wrap; }
-        .aba-btn { background: #334155; color: var(--text-muted); border: 1px solid var(--border); padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.95em; transition: all 0.3s; }
-        .aba-btn.active { background: var(--primary); color: white; border: none; }
-        .aba-btn:hover:not(.active) { background: #475569; border-color: var(--primary); }
 
-        .charts-container { display: flex; gap: 20px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center; }
-        .chart-card {
-          background: #1a2238; padding: 24px; border-radius: 20px; width: 240px; text-align: center;
-          position: relative; border: 2px solid transparent; background-clip: padding-box;
-          transition: all 0.4s ease; box-shadow: 0 8px 25px rgba(0,0,0,0.4); cursor: pointer;
+        /* ================== CONTEÚDO PRINCIPAL (Correção de Estabilidade) ================== */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Permite rolar apenas o conteúdo principal */
+            height: 100vh; /* Ocupa 100% da altura restante */
         }
-        .chart-card::before {
-          content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
-          border-radius: 22px; z-index: -1; opacity: 0; transition: opacity 0.4s ease; filter: blur(8px);
+        #header {
+            background: var(--card);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0; /* Impede que o header encolha */
+            z-index: 10;
         }
-        .chart-card:hover::before, .chart-card.active::before { opacity: 1; }
-        .chart-card:hover, .chart-card.active { transform: translateY(-6px); box-shadow: 0 15px 35px rgba(0, 217, 255, 0.3); }
+        #header h1 { font-size: 1.5em; margin: 0; color: white; font-weight: 700; }
+        .input-group { display: flex; gap: 12px; }
+        .input-raiz { padding: 10px 15px; font-size: 1em; background: #334155; border: 1px solid var(--border); border-radius: 8px; color: white; width: 200px; }
+        .btn-load { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-load:hover { background: var(--primary-light); }
+        .subtitle-header { font-size: 0.8em; color: var(--text-muted); margin-top: 4px; }
 
-        .chart-card h3 { color: white; margin-bottom: 16px; font-size: 1.2em; font-weight: 600; }
-        .chart-wrapper { position: relative; height: 160px; }
-        .chart-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.8em; font-weight: 700; color: white; }
+        #main-content { padding: 32px; flex-grow: 1; max-width: 100%; }
 
-        .tipo { margin-bottom: 36px; }
-        .tipo-header { background: #334155; padding: 18px 24px; border-radius: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
-        .tipo-header h2 { margin: 0; font-size: 1.5em; color: white; font-weight: 700; }
-        .tipo-resumo { font-size: 0.95em; color: var(--text-muted); font-weight: 500; }
+        /* ================== DASHBOARD HOME ================== */
+        .dashboard-home {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .stats-card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stats-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--highlight-gradient); border-radius: 12px 12px 0 0; }
+        .big-number { font-size: 3em; font-weight: 800; margin-bottom: 5px; }
+        .title-card { font-size: 1em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px; font-weight: 600; }
+        .success-text { color: var(--success); }
+        .danger-text { color: var(--danger); }
+        .primary-text { color: var(--primary-light); }
+        .total-text { color: var(--text); }
 
-        .modulo { background: #1e293b; border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px; transition: all 0.3s; }
-        .modulo:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-        .modulo h3 { color: white; margin-bottom: 12px; font-size: 1.25em; font-weight: 600; }
-        .stats { display: flex; gap: 12px; margin: 10px 0; font-size: 0.9em; flex-wrap: wrap; }
-        .stat { background: #334155; padding: 6px 12px; border-radius: 10px; font-weight: 600; font-size: 0.88em; }
-        .progress { height: 10px; background: #334155; border-radius: 5px; overflow: hidden; margin: 10px 0; }
-        .bar { height: 100%; background: linear-gradient(90deg, var(--success), #34d399); border-radius: 5px; transition: width 1s ease; }
+        .charts-container-home {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
 
-        .btn-cenarios { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
-        .btn-cenarios:hover { background: var(--primary); color: white; }
+        /* Card de Gráfico adaptado para o novo visual */
+        .chart-card-home {
+            background: #1a142e; padding: 24px; border-radius: 16px; width: 240px; text-align: center;
+            position: relative; cursor: pointer; transition: all 0.4s ease; box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chart-card-home:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(71, 247, 255, 0.4); }
+        .chart-card-home h3 { color: white; margin-bottom: 16px; font-size: 1.2em; font-weight: 600; }
+        .chart-wrapper { position: relative; height: 140px; }
+        .chart-label-home { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.6em; font-weight: 700; color: white; }
 
-        .btn-executar-modulo { background: #dc2626; color: white; border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
-        .btn-executar-modulo:hover { background: #b91c1c; transform: translateY(-1px); }
+        /* ================== CONTEÚDO DETALHE (WEB/API/MOBILE) ================== */
+        .tipo-header { background: var(--primary); padding: 16px 24px; border-radius: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .tipo-header h2 { margin: 0; font-size: 1.4em; color: white; font-weight: 700; }
+        .tipo-resumo { font-size: 0.9em; color: white; font-weight: 500; opacity: 0.9; }
 
-        .btn-executar-todos { background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.9em; }
-        .btn-executar-todos:hover { background: #b91c1c; }
+        .modulo { background: #1a2238; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 15px; transition: all 0.3s; }
+        .modulo:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .modulo h3 { color: white; margin-bottom: 10px; font-size: 1.2em; font-weight: 600; }
+        .stats { display: flex; gap: 10px; margin: 8px 0; font-size: 0.85em; flex-wrap: wrap; }
+        .stat { background: #334155; padding: 5px 10px; border-radius: 8px; font-weight: 600; }
+        .progress { height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .bar { height: 100%; background: linear-gradient(90deg, var(--success), #34d399); border-radius: 4px; transition: width 1s ease; }
+        .btn-cenarios { background: transparent; color: #47f7ff; border: 1.5px solid #47f7ff; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85em; transition: all 0.3s; }
+        .btn-cenarios:hover { background: #47f7ff; color: var(--bg-sidebar); }
+        .btn-executar-modulo { background: #165928; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85em; transition: all 0.3s; }
+        .btn-executar-modulo:hover { background: #318c49; transform: translateY(-1px); }
 
-        .empty, .loading, .error { text-align: center; padding: 30px; color: var(--text-muted); font-style: italic; }
-        .error { color: var(--danger); background: rgba(239, 68, 68, 0.1); border-radius: 12px; }
-        .footer { text-align: center; margin-top: 40px; color: var(--text-muted); font-size: 0.85em; }
+        /* Footer */
+        .footer { padding: 16px 32px; text-align: right; color: var(--text-muted); font-size: 0.85em; border-top: 1px solid rgba(255, 255, 255, 0.05); flex-shrink: 0; }
 
+        /* Estilo do Modal - Cenários */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.95); justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .modal.active { display: flex; }
-        .modal-content { background: var(--card); border-radius: 16px; width: 92%; max-width: 1000px; max-height: 88vh; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
-        .modal-header { background: var(--primary); padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; color: white; }
-        .close { font-size: 32px; font-weight: bold; cursor: pointer; }
-        .close:hover { color: #fca5a5; }
-        .modal-body { padding: 24px; overflow-y: auto; max-height: 65vh; }
+        .modal-content { background: var(--card); border-radius: 16px; width: 92%; max-width: 1000px; max-height: 88vh; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.4); display: flex; flex-direction: column; }
+        .modal-header { background: var(--primary); padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; color: white; flex-shrink: 0; }
+        .modal-body { padding: 20px 28px; overflow-y: auto; flex-grow: 1; }
+        .close { cursor: pointer; font-size: 1.5em; font-weight: 700; transition: color 0.3s; }
+        .close:hover { color: #47f7ff; }
 
-        .cenario-line { display: flex; align-items: center; gap: 18px; padding: 14px 0; border-bottom: 1px solid #334155; transition: background 0.3s; }
-        .cenario-line:hover { background: #1e293b; }
-        .status-bar-vertical { width: 6px; height: 100%; border-radius: 3px; }
-        .status-PASS .status-bar-vertical { background: var(--success); }
-        .status-FAIL .status-bar-vertical { background: var(--danger); }
-        .status-PENDING .status-bar-vertical { background: #f59e0b; }
-        .cenario-content { flex: 1; display: flex; align-items: center; gap: 18px; font-size: 0.95em; }
-        .cenario-key { font-weight: 600; color: var(--primary); text-decoration: none; min-width: 90px; }
-        .cenario-key:hover { text-decoration: underline; }
-        .cenario-nome { flex: 1; color: var(--text); font-weight: 500; }
-        .cenario-status { font-weight: 700; font-size: 0.8em; text-transform: uppercase; padding: 4px 12px; border-radius: 8px; letter-spacing: 1px; }
-        .status-PASS .cenario-status { color: #10b981; background: rgba(16, 185, 129, 0.15); }
-        .status-FAIL .cenario-status { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
-        .status-PENDING .cenario-status { color: #f59e0b; background: rgba(245, 158, 11, 0.15); }
-        .no-data { text-align: center; color: var(--text-muted); padding: 50px; font-size: 1.1em; }
-
-        .btn-executar { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.75em; transition: all 0.3s; white-space: nowrap; }
-        .btn-executar:hover { background: #2563eb; transform: scale(1.05); }
+        /* Estilos dos Cenários no Modal */
+        .cenario-line { display: flex; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: #1a2238; }
+        .status-bar-vertical { width: 6px; flex-shrink: 0; }
+        .status-PASS .status-bar-vertical { background-color: var(--success); }
+        .status-FAIL .status-bar-vertical { background-color: var(--danger); }
+        .status-PENDING .status-bar-vertical { background-color: var(--primary); }
+        .cenario-content { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; flex-grow: 1; gap: 15px; }
+        .cenario-key { font-weight: 700; color: #47f7ff; text-decoration: none; min-width: 80px; }
+        .cenario-nome { flex-grow: 1; color: var(--text-muted); font-size: 0.95em; }
+        .cenario-status { font-weight: 600; min-width: 60px; text-align: center; }
+        .status-PASS .cenario-status { color: var(--success); }
+        .status-FAIL .cenario-status { color: var(--danger); }
+        .status-PENDING .cenario-status { color: #edbe3b; }
+        .btn-executar { background: #165928; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.8em; }
+        .btn-executar-todos { background: #318c49; color: var(--bg-sidebar); border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.3s; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>Dashboard de Testes - Idea Cash</h1>
-    <div class="subtitle">Digite a issue raiz (ex: IC-1272) – IC-820 excluído automaticamente</div>
 
-    <div class="top-bar">
-        <div class="input-group">
-            <input type="text" id="input-raiz" class="input-raiz" placeholder="Ex: IC-1272" autocomplete="off">
-            <button class="btn" onclick="carregar(false)">CACHE</button>
-        </div>
-        <div class="filtro">
+<div id="sidebar">
+    <div class="logo">IdeaCash</div>
+
+    <div class="nav-group-title">Métricas de Testes</div>
+    <a class="nav-link active" data-aba="DASHBOARD">DASHBOARD</a>
+    <a class="nav-link" data-aba="WEB">WEB</a>
+    <a class="nav-link" data-aba="API">API</a>
+    <a class="nav-link" data-aba="MOBILE">MOBILE</a>
+    <a class="nav-link" data-aba="GERAL">VISÃO GERAL</a>
+
+    <div class="nav-group-title">Filtro de Status</div>
+    <div style="padding: 0 24px;">
+        <div class="filtro-btn-group" id="filtro-container">
             <button class="filtro-btn active" data-filtro="todos">TODOS</button>
             <button class="filtro-btn" data-filtro="pass">PASS</button>
             <button class="filtro-btn" data-filtro="fail">FAIL</button>
         </div>
     </div>
+</div>
 
-    <div class="abas-container">
-        <button class="aba-btn active" data-aba="WEB">WEB</button>
-        <button class="aba-btn" data-aba="API">API</button>
-        <button class="aba-btn" data-aba="MOBILE">MOBILE</button>
-        <button class="aba-btn" data-aba="GERAL">GERAL</button>
+<div class="main-container">
+    <div id="header">
+        <div style="display: flex; flex-direction: column;">
+            <h1>Dashboard de Testes - Idea Cash</h1>
+            <span class="subtitle-header">Análise de cobertura e status de testes de automação</span>
+        </div>
+        <div class="input-group">
+            <input  type="text" id="input-raiz" class="input-raiz" placeholder="Ex: IC-1272" autocomplete="off">
+            <button class="btn-load" onclick="carregar(true)">BUSCAR</button>
+            <button class="btn-load" onclick="carregar(false)">CACHE</button>
+        </div>
     </div>
 
-    <div class="charts-container" id="charts-container"></div>
-    <div id="conteudo-aba"></div>
+    <div id="main-content">
+        <div id="conteudo-aba">
+            <div class="empty">
+                Use a caixa de busca acima para carregar as métricas de testes de uma **Issue Raiz** (ex: IC-1272).
+            </div>
+        </div>
+    </div>
 
-    <div class="footer">Atualizado: <span id="atualizacao">-</span></div>
+    <div class="footer">
+        Atualizado: <span id="atualizacao">-</span>
+    </div>
 </div>
 
 <div id="modal" class="modal">
@@ -150,7 +236,7 @@
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
                 <h2 id="modal-title" style="margin:0;">Cenários</h2>
-                <button id="btn-executar-todos-modal" class="btn-executar-todos" style="display:none;">EXECUTAR TODOS</button>
+                <button id="btn-executar-todos-modal" class="btn-executar-todos" style="display:none;">EXECUTAR MÓDULO</button>
             </div>
             <span class="close" onclick="fecharModal()">X</span>
         </div>
@@ -160,13 +246,15 @@
     </div>
 </div>
 
+<div class="toast-container" id="toast-container"></div>
+
 <script>
-    const PROXY = "https://corsproxy.io/?";
+    const PROXY = "https://jira-proxy.michael-pereira.workers.dev";
     const JIRA_BASE = "https://idea-maker.atlassian.net/browse";
 
     const REPOS_POR_TIPO = {
-      WEB:    { owner: "idea-maker-bank", repo:"ideabank_mobile_appium_browserstack_tests" },
-      API:    { owner: "idea-maker-bank", repo: "ideabank_mobile_appium_browserstack_tests" },
+      WEB:    { owner: "idea-maker-bank", repo:"ideabank_web_automation_tests" },
+      API:    { owner: "idea-maker-bank", repo: "ideabank_api_automation_tests" },
       MOBILE: { owner: "idea-maker-bank", repo: "ideabank_mobile_appium_browserstack_tests" },
       GERAL:  { owner: "idea-maker-bank", repo: "ideabank_mobile_appium_browserstack_tests" }
     };
@@ -175,20 +263,56 @@
     let dadosCache = null;
     let debounceTimer = null;
     let filtroAtual = "todos";
-    let abaAtual = "WEB";
-    let charts = {};
+    let abaAtual = "DASHBOARD";
+    let charts = {}; // Objeto para armazenar as instâncias dos gráficos
+
+    // --- MOCK DATA (Ajustado para a nova estrutura) ---
+    const MOCK_DATA = {
+        WEB: [{
+            frente: { key: "IC-WEB-1", nome: "Test Plan WEB V2" },
+            modulos: [
+                { key: "IC-MOD-W1", nome: "Modulo Login", cenarios: [{ key: "IC-1001", nome: "Cenario de login com sucesso", status: "Pass"}, { key: "IC-1002", nome: "Cenario de falha de login", status: "Fail"}, { key: "IC-1003", nome: "Cenario de senha vazia", status: "Pass"}]},
+                { key: "IC-MOD-W2", nome: "Modulo Dashboard", cenarios: [{ key: "IC-1004", nome: "Cenario de acesso ao dashboard", status: "Pass"}, { key: "IC-1005", nome: "Cenario de logout", status: "Pass"}]},
+            ],
+            stats: { total: 5, pass: 4, fail: 1 }
+        }],
+        API: [{
+            frente: { key: "IC-API-1", nome: "Test Plan API V1" },
+            modulos: [
+                { key: "IC-MOD-A1", nome: "Modulo Clientes", cenarios: [{ key: "IC-2001", nome: "Cenario GET cliente ID", status: "Pass"}, { key: "IC-2002", nome: "Cenario POST novo cliente", status: "Fail"}]},
+            ],
+            stats: { total: 2, pass: 1, fail: 1 }
+        }],
+        MOBILE: [{
+            frente: { key: "IC-MOB-1", nome: "Test Plan Mobile App" },
+            modulos: [
+                { key: "IC-MOD-M1", nome: "Modulo Transferencia", cenarios: [{ key: "IC-3001", nome: "Cenario de transferencia Pix", status: "Pass"}, { key: "IC-3002", nome: "Cenario de transferencia TED", status: "Pass"}, { key: "IC-3003", nome: "Cenario de saldo insuficiente", status: "Pass"}]},
+            ],
+            stats: { total: 3, pass: 3, fail: 0 }
+        }],
+        // NOVO: Adição de MOCK para Sub-bugs
+        BUGS: {
+            bugsTotal: [
+                { key: "IC-BUG-1", nome: "Bug de login com falha", status: "Em Análise" },
+                { key: "IC-BUG-2", nome: "Erro ao gerar metadados de PIX", status: "Disponível para Testes" },
+                { key: "IC-BUG-3", nome: "Transferência com valor inválido", status: "Em Desenvolvimento" }
+            ],
+            bugsRetest: [
+                { key: "IC-BUG-2", nome: "Erro ao gerar metadados de PIX", status: "Disponível para Testes" }
+            ]
+        }
+    };
+    // ------------------------------------------
 
     function lerRaizDaURL() {
       const params = new URLSearchParams(location.search);
       return params.get("raiz") || "";
     }
-
     function atualizarURL(raiz) {
       const url = new URL(location);
       url.searchParams.set("raiz", raiz);
       history.replaceState({}, "", url);
     }
-
     function onInputRaiz() {
       clearTimeout(debounceTimer);
       const input = document.getElementById("input-raiz");
@@ -201,7 +325,6 @@
         }
       }, 800);
     }
-
     function onKeyDown(e) {
       if (e.key === "Enter") {
         clearTimeout(debounceTimer);
@@ -214,84 +337,139 @@
       }
     }
 
-    // =============== EXECUTAR CENÁRIO ===============
-    async function dispararAutomacao(testKey, tipo = null) {
-      if (!confirm(`Executar automação do cenário ${testKey} (${tipo || 'GERAL'})?`)) return;
-
-      let token = localStorage.getItem('gh_token');
-      if (!token) {
-        token = prompt("Cole o teu Personal Access Token do GitHub (escopo repo):");
-        if (!token) return alert("Token necessário");
-        localStorage.setItem('gh_token', token.trim());
-      }
-
-      const configRepo = REPOS_POR_TIPO[tipo || 'GERAL'];
-      const tag = `@${testKey}`;
-
-      try {
-        const resp = await fetch(`https://api.github.com/repos/${configRepo.owner}/${configRepo.repo}/dispatches`, {
-          method: "POST",
-          headers: {
-            "Authorization": `token ${token}`,
-            "Accept": "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            event_type: "start-automation",
-            client_payload: { tag }
-          })
+    function mostrarToast(mensagem, tipo = "success") {
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+        const toast = document.createElement("div");
+        toast.className = `toast ${tipo}`;
+        toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: ${tipo === 'success' ? '#10b981' : '#ef4444'}; color: white; border-radius: 8px; z-index: 10000; transition: all 0.5s ease-out; transform: translateY(100px); opacity: 0;`;
+        toast.innerHTML = `<span>${mensagem}</span>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
         });
-
-        if (resp.ok) {
-          alert(`Automação disparada!\nRepo: ${configRepo.repo}\nTag: ${tag}\nAcompanhe nas Actions`);
-        } else {
-          const err = await resp.text();
-          alert(`Erro ${resp.status}\n${err.substring(0, 300)}`);
-          if (resp.status === 401) localStorage.removeItem('gh_token');
-        }
-      } catch (e) {
-        alert("Erro de rede: " + e.message);
-      }
+        setTimeout(() => {
+            toast.style.transform = 'translateY(100px)';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 400);
+        }, 5000);
     }
 
-    // =============== EXECUTAR MÓDULO INTEIRO ===============
-    async function executarModuloInteiro(moduloKey, moduloNome, tipo) {
-      if (!confirm(`Executar TODOS os cenários do módulo\n${moduloNome} (${moduloKey})\nna frente ${tipo || 'GERAL'}?`)) return;
-
-      let token = localStorage.getItem('gh_token');
-      if (!token) {
-        token = prompt("Cole o teu Personal Access Token do GitHub (escopo repo):");
-        if (!token) return alert("Token necessário");
-        localStorage.setItem('gh_token', token.trim());
-      }
-
-      const configRepo = REPOS_POR_TIPO[tipo || 'GERAL'];
-      const tag = `@${moduloKey}`;
-
-      try {
-        const resp = await fetch(`https://api.github.com/repos/${configRepo.owner}/${configRepo.repo}/dispatches`, {
-          method: "POST",
-          headers: {
-            "Authorization": `token ${token}`,
-            "Accept": "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            event_type: "start-automation",
-            client_payload: { tag, run_all: true }
-          })
+    async function confirmarComToast(titulo, texto) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement("div");
+            overlay.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.92);z-index:9998;display:flex;justify-content:center;align-items:center;backdrop-filter:blur(6px);`;
+            const modal = document.createElement("div");
+            modal.style.cssText = `background:#1e293b;padding:32px;border-radius:16px;max-width:480px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5);`;
+            modal.innerHTML = `
+                <h3 style="color:white;margin-bottom:16px;">${titulo}</h3>
+                <p style="color:#cbd5e1;margin-bottom:24px;line-height:1.5;">${texto}</p>
+                <div style="display:flex;gap:16px;justify-content:center;">
+                    <button id="toast-confirmar" style="background:#3b82f6;color:white;border:none;padding:12px 24px;border-radius:12px;cursor:pointer;font-weight:600;">Sim, executar</button>
+                    <button id="toast-cancelar" style="background:#475569;color:white;border:none;padding:12px 24px;border-radius:12px;cursor:pointer;font-weight:600;">Cancelar</button>
+                </div>`;
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            document.getElementById("toast-confirmar").onclick = () => { overlay.remove(); resolve(true); };
+            document.getElementById("toast-cancelar").onclick = () => { overlay.remove(); resolve(false); };
+            overlay.onclick = (e) => { if (e.target === overlay) { overlay.remove(); resolve(false); } };
         });
+    }
 
-        if (resp.ok) {
-          alert(`Módulo inteiro disparado!\n${moduloNome}\nRepo: ${configRepo.repo}\nTag: ${tag}`);
-        } else {
-          const err = await resp.text();
-          alert(`Erro ao disparar módulo\n${err.substring(0, 300)}`);
-          if (resp.status === 401) localStorage.removeItem('gh_token');
+    async function dispararAutomacao(testKey, tipo = null) {
+        const confirmado = await confirmarComToast(
+            "Executar automação?",
+            `Você está prestes a executar o cenário <strong>${testKey}</strong><br>na frente <strong>${tipo || 'GERAL'}</strong>.`
+        );
+        if (!confirmado) return;
+
+        let token = localStorage.getItem('gh_token');
+        if (!token) {
+            token = prompt("Cole o teu Personal Access Token do GitHub (escopo repo):");
+            if (!token) {
+                mostrarToast("Token necessário para executar automações", "error");
+                return;
+            }
+            localStorage.setItem('gh_token', token.trim());
         }
-      } catch (e) {
-        alert("Erro de rede: " + e.message);
-      }
+
+        const configRepo = REPOS_POR_TIPO[tipo || 'GERAL'];
+        const tag = `@${testKey}`;
+
+        try {
+            const resp = await fetch(`https://api.github.com/repos/${configRepo.owner}/${configRepo.repo}/dispatches`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    event_type: "start-automation",
+                    client_payload: { tag }
+                })
+            });
+
+            if (resp.ok) {
+                mostrarToast(`Automação do cenário ${testKey} disparada com sucesso! Acompanhe nas Actions`, "success");
+            } else {
+                const err = await resp.text();
+                let msg = err.includes("Bad credentials") ? "Token inválido ou expirado" :
+                          err.includes("Repository access blocked") ? "Acesso ao repositório bloqueado" : "Erro ao disparar automação";
+                mostrarToast(msg, "error");
+                if (resp.status === 401) localStorage.removeItem('gh_token');
+            }
+        } catch (e) {
+            mostrarToast("Erro de rede ao disparar automação", "error");
+        }
+    }
+
+    async function executarModuloInteiro(moduloKey, moduloNome, tipo) {
+        const confirmado = await confirmarComToast(
+            "Executar módulo inteiro?",
+            `Você vai executar <strong>todos os cenários</strong> do módulo<br><strong>${moduloNome} (${moduloKey})</strong><br>na frente <strong>${tipo || 'GERAL'}</strong>.`
+        );
+        if (!confirmado) return;
+
+        let token = localStorage.getItem('gh_token');
+        if (!token) {
+            token = prompt("Cole o teu Personal Access Token do GitHub (escopo repo):");
+            if (!token) {
+                mostrarToast("Token necessário para executar automações", "error");
+                return;
+            }
+            localStorage.setItem('gh_token', token.trim());
+        }
+
+        const configRepo = REPOS_POR_TIPO[tipo || 'GERAL'];
+        const tag = `@${moduloKey}`;
+
+        try {
+            const resp = await fetch(`https://api.github.com/repos/${configRepo.owner}/${configRepo.repo}/dispatches`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    event_type: "start-automation",
+                    client_payload: { tag, run_all: true }
+                })
+            });
+
+            if (resp.ok) {
+                mostrarToast(`Módulo "${moduloNome}" disparado com sucesso! Todos os cenários estão na fila`, "success");
+            } else {
+                const err = await resp.text();
+                let msg = err.includes("Bad credentials") ? "Token inválido" : "Erro ao disparar o módulo";
+                mostrarToast(msg, "error");
+                if (resp.status === 401) localStorage.removeItem('gh_token');
+            }
+        } catch (e) {
+            mostrarToast("Erro de rede ao executar o módulo", "error");
+        }
     }
 
     function gerarLinhaCenario(c, tipo = null) {
@@ -309,433 +487,31 @@
         </div>`;
     }
 
-    document.querySelectorAll('.filtro-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        filtroAtual = btn.dataset.filtro;
-        renderizarComFiltro();
-        atualizarCharts();
-      });
-    });
+    // NOVO: Função para renderizar uma linha de Issue (Sub-bug)
+    function gerarLinhaIssue(issue) {
+        const status = issue.status.toUpperCase();
+        const isRetest = status.includes("DISPONÍVEL PARA TESTES");
+        const statusClass = isRetest ? "status-PENDING" : // Destacar bugs de reteste com cor de PENDENTE/AMARELO
+                            status.includes("CONCLUIDO") ? "status-PASS" :
+                            "status-FAIL";
+        const statusColor = isRetest ? '#47f7ff' : // Ciano para reteste
+                            statusClass === "status-PASS" ? 'var(--success)' :
+                            statusClass === "status-FAIL" ? 'var(--danger)' : '#edbe3b';
 
-    document.querySelectorAll('.aba-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.aba-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        abaAtual = btn.dataset.aba;
-        renderizarComFiltro();
-      });
-    });
-
-    async function carregar(forcar = false) {
-      if (!RAIZ) return;
-
-      const CACHE_KEY = `jira-${RAIZ}-dashboard`;
-      const cache = localStorage.getItem(CACHE_KEY);
-      const agora = Date.now();
-
-      if (!forcar && cache) {
-        const dados = JSON.parse(cache);
-        if (dados.timestamp > agora - 1000 * 60 * 30) {
-          dadosCache = dados.data;
-          renderizarCompleto();
-          return;
-        }
-      }
-
-      document.getElementById("conteudo-aba").innerHTML = '<div class="loading">Carregando dados...</div>';
-
-      try {
-        const JQL_MODULOS = `project = "IDEA+CASH" AND issuetype = "Test Plan" AND issue in linkedIssues(${RAIZ}) AND key != IC-820 AND key not in linkedIssues(IC-820)`;
-        const frentes = await buscarJQL(JQL_MODULOS) || [];
-        const hierarquia = { WEB: [], API: [], MOBILE: [] };
-        let totalGeral = 0, passGeral = 0, failGeral = 0;
-
-        for (const frente of frentes) {
-          const tipo = detectarTipo(frente.nome);
-          if (!hierarquia[tipo]) continue;
-
-          const modulos = await buscarModulos(frente.key);
-          const statsFrente = { total: 0, pass: 0, fail: 0 };
-
-          for (const modulo of modulos) {
-            const cenarios = await buscarJQL(`project = "IDEA+CASH" AND parent = ${modulo.key} AND issuetype = "Test Case"`) || [];
-            const total = cenarios.length;
-            const pass = cenarios.filter(c => /PASS|Pass/i.test(c.status)).length;
-            const fail = cenarios.filter(c => /FAIL|Fail/i.test(c.status)).length;
-
-            statsFrente.total += total;
-            statsFrente.pass += pass;
-            statsFrente.fail += fail;
-
-            modulo.cenarios = cenarios;
-            modulo.stats = { total, pass, fail, perc: total > 0 ? Math.round((pass / total) * 100) : 0 };
-          }
-
-          totalGeral += statsFrente.total;
-          passGeral += statsFrente.pass;
-          failGeral += statsFrente.fail;
-
-          hierarquia[tipo].push({ frente, modulos, stats: statsFrente });
-        }
-
-        const dados = { data: hierarquia, timestamp: agora };
-        localStorage.setItem(CACHE_KEY, JSON.stringify(dados));
-        dadosCache = hierarquia;
-        renderizarCompleto();
-      } catch (e) {
-        console.error(e);
-        document.getElementById("conteudo-aba").innerHTML = `<div class="error">Erro: ${e.message}<br><small>Tente usar o cache.</small></div>`;
-        if (cache) {
-          const dados = JSON.parse(cache);
-          dadosCache = dados.data;
-          renderizarCompleto();
-        }
-      }
+        return `
+            <div class="cenario-line ${statusClass}" style="border-left: 6px solid ${statusColor}; border-color: var(--border);">
+                <div class="cenario-content" style="padding: 12px 15px; border-left: none; align-items: flex-start;">
+                    <a href="${JIRA_BASE}/${issue.key}" target="_blank" class="cenario-key" style="min-width: 100px; color: ${statusColor};">${issue.key}</a>
+                    <div class="cenario-nome" style="text-align: left;">${issue.nome}</div>
+                    <div class="cenario-status" style="min-width: 150px; text-align: right; color: ${statusColor};">${issue.status}</div>
+                    </div>
+            </div>`;
     }
-
-    function renderizarCompleto() {
-      criarCharts();
-      renderizarComFiltro();
-      document.getElementById("atualizacao").textContent = new Date().toLocaleTimeString();
-    }
-
-    function criarCharts() {
-      const container = document.getElementById("charts-container");
-      container.innerHTML = '';
-      const tipos = ["WEB", "API", "MOBILE"];
-      let geralPass = 0, geralFail = 0, geralTotal = 0;
-
-      tipos.forEach(tipo => {
-        const frentes = dadosCache[tipo] || [];
-        if (frentes.length === 0) return;
-
-        const total = frentes.reduce((s, f) => s + f.stats.total, 0);
-        const pass = frentes.reduce((s, f) => s + f.stats.pass, 0);
-        const fail = frentes.reduce((s, f) => s + f.stats.fail, 0);
-        geralPass += pass; geralFail += fail; geralTotal += total;
-
-        const card = document.createElement('div');
-        card.className = 'chart-card';
-        card.dataset.tipo = tipo;
-        card.innerHTML = `<h3>${tipo}</h3><div class="chart-wrapper"><canvas id="chart-${tipo}"></canvas><div class="chart-label" id="label-${tipo}">0%</div></div>`;
-        container.appendChild(card);
-
-        const ctx = document.getElementById(`chart-${tipo}`).getContext('2d');
-        const perc = total > 0 ? Math.round((pass / total) * 100) : 0;
-        document.getElementById(`label-${tipo}`).textContent = perc + '%';
-
-        charts[tipo] = new Chart(ctx, {
-          type: 'doughnut', data: { datasets: [{ data: [pass, fail, total - pass - fail], backgroundColor: ['#10b981', '#ef4444', '#334155'], borderColor: ['#10b981', '#ef4444', '#334155'], borderWidth: 3, borderRadius: 1, hoverOffset: 4 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, cutout: '80%', animation: { duration: 1600, easing: 'easeOutQuart' }, events: ['click'] }
-        });
-
-        card.addEventListener('click', (e) => {
-          const points = charts[tipo].getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-          if (!points.length) return;
-          const index = points[0].index;
-          const status = index === 0 ? 'PASS' : index === 1 ? 'FAIL' : null;
-          if (status) abrirModalChart(tipo, status);
-        });
-      });
-
-      const geralCard = document.createElement('div');
-      geralCard.className = 'chart-card';
-      geralCard.dataset.tipo = 'geral';
-      geralCard.innerHTML = `<h3>GERAL</h3><div class="chart-wrapper"><canvas id="chart-geral"></canvas><div class="chart-label" id="label-geral">0%</div></div>`;
-      container.appendChild(geralCard);
-
-      const percGeral = geralTotal > 0 ? Math.round((geralPass / geralTotal) * 100) : 0;
-      document.getElementById('label-geral').textContent = percGeral + '%';
-
-      charts['geral'] = new Chart(ctxGeral, {
-        type: 'doughnut', data: { datasets: [{ data: [geralPass, geralFail, geralTotal - geralPass - geralFail], backgroundColor: ['#10b981', '#ef4444', '#334155'], borderColor: ['#10b981', '#ef4444', '#334155'], borderWidth: 2, borderRadius: 1, hoverOffset: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, cutout: '80%', animation: { duration: 1800, easing: 'easeOutElastic' }, events: ['click'] }
-      });
-
-      geralCard.addEventListener('click', (e) => {
-        const points = charts['geral'].getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-        if (!points.length) return;
-        const index = points[0].index;
-        const status = index === 0 ? 'PASS' : index === 1 ? 'FAIL' : null;
-        if (status) abrirModalChart('geral', status);
-      });
-    }
-
-    function atualizarCharts() {
-      // (código completo de atualizarCharts mantido — funciona perfeitamente)
-      const tipos = ["WEB", "API", "MOBILE"];
-      let geralPass = 0, geralFail = 0, geralTotal = 0;
-
-      tipos.forEach(tipo => {
-        if (!charts[tipo]) return;
-        const frentes = dadosCache[tipo] || [];
-        const total = frentes.reduce((s, f) => s + f.stats.total, 0);
-        const pass = frentes.reduce((s, f) => s + f.stats.pass, 0);
-        const fail = frentes.reduce((s, f) => s + f.stats.fail, 0);
-        let filteredPass = 0, filteredFail = 0, filteredTotal = 0;
-        frentes.forEach(frente => {
-          frente.modulos.forEach(modulo => {
-            const filtered = modulo.cenarios.filter(c => {
-              if (filtroAtual === "todos") return true;
-              if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
-              if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
-              return true;
-            });
-            filteredTotal += filtered.length;
-            filteredPass += filtered.filter(c => /PASS|Pass/i.test(c.status)).length;
-            filteredFail += filtered.filter(c => /FAIL|Fail/i.test(c.status)).length;
-          });
-        });
-        const data = filtroAtual === "todos" ? [pass, fail, total - pass - fail] :
-                     filtroAtual === "pass" ? [filteredPass, 0, 0] :
-                     [0, filteredFail, filteredTotal - filteredPass - filteredFail];
-        charts[tipo].data.datasets[0].data = data;
-        charts[tipo].update('quiet');
-        const perc = filteredTotal > 0 ? Math.round((filteredPass / filteredTotal) * 100) : 0;
-        document.getElementById(`label-${tipo}`).textContent = perc + '%';
-      });
-
-      const geralFiltered = calcularFiltrado();
-      const percGeral = geralFiltered.total > 0 ? Math.round((geralFiltered.pass / geralFiltered.total) * 100) : 0;
-      document.getElementById('label-geral').textContent = percGeral + '%';
-      charts['geral'].data.datasets[0].data = [geralFiltered.pass, geralFiltered.fail, geralFiltered.total - geralFiltered.pass - geralFiltered.fail];
-      charts['geral'].update('quiet');
-    }
-
-    function calcularFiltrado() {
-      let total = 0, pass = 0, fail = 0;
-      Object.values(dadosCache).forEach(tipo => {
-        tipo.forEach(frente => {
-          frente.modulos.forEach(modulo => {
-            const filtered = modulo.cenarios.filter(c => {
-              if (filtroAtual === "todos") return true;
-              if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
-              if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
-              return true;
-            });
-            total += filtered.length;
-            pass += filtered.filter(c => /PASS|Pass/i.test(c.status)).length;
-            fail += filtered.filter(c => /FAIL|Fail/i.test(c.status)).length;
-          });
-        });
-      });
-      return { total, pass, fail };
-    }
-
-    function renderizarComFiltro() {
-      let html = '';
-      const tipos = ["WEB", "API", "MOBILE"];
-
-      if (abaAtual === "GERAL") {
-        let todosModulos = [];
-        tipos.forEach(tipo => {
-          const frentes = dadosCache[tipo] || [];
-          frentes.forEach(frente => {
-            frente.modulos.forEach(modulo => {
-              const cenariosFiltrados = modulo.cenarios.filter(c => {
-                if (filtroAtual === "todos") return true;
-                if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
-                if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
-                return true;
-              });
-              if (cenariosFiltrados.length > 0 || filtroAtual === "todos") {
-                const clone = JSON.parse(JSON.stringify(modulo));
-                clone.cenarios = cenariosFiltrados;
-                clone.stats.total = cenariosFiltrados.length;
-                clone.stats.pass = cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
-                clone.stats.fail = cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
-                clone.stats.perc = clone.stats.total > 0 ? Math.round((clone.stats.pass / clone.stats.total) * 100) : 0;
-                todosModulos.push({ ...clone, tipo });
-              }
-            });
-          });
-        });
-
-        if (todosModulos.length === 0) {
-          html = `<div class="empty">Nenhum cenário encontrado.</div>`;
-        } else {
-          const total = todosModulos.reduce((s, m) => s + m.stats.total, 0);
-          const pass = todosModulos.reduce((s, m) => s + m.stats.pass, 0);
-          const perc = total > 0 ? Math.round((pass / total) * 100) : 0;
-
-          html += `<div class="tipo"><div class="tipo-header"><h2>GERAL</h2><div class="tipo-resumo">${total} cenários | ${pass} PASS | ${perc}% aprovado</div></div>`;
-
-          todosModulos.forEach((modulo, idx) => {
-            html += `
-              <div class="modulo">
-                <h3>${modulo.nome} (${modulo.key}) <small style="color:#94a3b8">— ${modulo.tipo}</small></h3>
-                <div class="stats">
-                  <div class="stat">Total: ${modulo.stats.total}</div>
-                  <div class="stat" style="color:#10b981">Pass: ${modulo.stats.pass}</div>
-                  <div class="stat" style="color:#ef4444">Fail: ${modulo.stats.fail}</div>
-                  <div class="stat">Aprovação: ${modulo.stats.perc}%</div>
-                </div>
-                <div class="progress"><div class="bar" style="width:${modulo.stats.perc}%"></div></div>
-                <div style="display: flex; justify-content: space-between; margin-top: 12px; gap: 12px;">
-                  <button class="btn-cenarios" onclick="abrirModalGeral(${idx})">Ver cenários</button>
-                  <button class="btn-executar-modulo" onclick="executarModuloInteiro('${modulo.key}', '${modulo.nome.replace(/'/g, "\\'")}', '${modulo.tipo}')">
-                    EXECUTAR MÓDULO
-                  </button>
-                </div>
-              </div>`;
-          });
-          html += `</div>`;
-        }
-      } else {
-        const frentes = dadosCache[abaAtual] || [];
-        if (frentes.length === 0) {
-          html = `<div class="empty">Nenhum módulo encontrado em ${abaAtual}.</div>`;
-        } else {
-          let modulosFiltrados = [];
-          frentes.forEach(frente => {
-            frente.modulos.forEach(modulo => {
-              const cenariosFiltrados = modulo.cenarios.filter(c => {
-                if (filtroAtual === "todos") return true;
-                if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
-                if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
-                return true;
-              });
-              if (cenariosFiltrados.length > 0 || filtroAtual === "todos") {
-                const clone = JSON.parse(JSON.stringify(modulo));
-                clone.cenarios = cenariosFiltrados;
-                clone.stats.total = cenariosFiltrados.length;
-                clone.stats.pass = cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
-                clone.stats.fail = cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
-                clone.stats.perc = clone.stats.total > 0 ? Math.round((clone.stats.pass / clone.stats.total) * 100) : 0;
-                modulosFiltrados.push(clone);
-              }
-            });
-          });
-
-          const totalTipo = modulosFiltrados.reduce((s, m) => s + m.stats.total, 0);
-          const passTipo = modulosFiltrados.reduce((s, m) => s + m.stats.pass, 0);
-          const percTipo = totalTipo > 0 ? Math.round((passTipo / totalTipo) * 100) : 0;
-
-          html += `<div class="tipo"><div class="tipo-header"><h2>${abaAtual}</h2><div class="tipo-resumo">${totalTipo} cenários | ${passTipo} PASS | ${percTipo}% aprovado</div></div>`;
-
-          modulosFiltrados.forEach((modulo, idx) => {
-            const globalIndex = { tipo: abaAtual, mIndex: idx, isFiltered: true };
-            html += `
-              <div class="modulo">
-                <h3>${modulo.nome} (${modulo.key})</h3>
-                <div class="stats">
-                  <div class="stat">Total: ${modulo.stats.total}</div>
-                  <div class="stat" style="color:#10b981">Pass: ${modulo.stats.pass}</div>
-                  <div class="stat" style="color:#ef4444">Fail: ${modulo.stats.fail}</div>
-                  <div class="stat">Aprovação: ${modulo.stats.perc}%</div>
-                </div>
-                <div class="progress"><div class="bar" style="width:${modulo.stats.perc}%"></div></div>
-                <div style="display: flex; justify-content: space-between; margin-top: 12px; gap: 12px;">
-                  <button class="btn-cenarios" onclick="abrirModalFiltrado(${JSON.stringify(globalIndex).replace(/"/g, '&quot;')})">
-                    Ver cenários
-                  </button>
-                  <button class="btn-executar-modulo" onclick="executarModuloInteiro('${modulo.key}', '${modulo.nome.replace(/'/g, "\\'")}', '${abaAtual}')">
-                    EXECUTAR MÓDULO
-                  </button>
-                </div>
-              </div>`;
-          });
-          html += `</div>`;
-        }
-      }
-
-      document.getElementById("conteudo-aba").innerHTML = html;
-    }
-
-    window.abrirModalFiltrado = function(indexObj) {
-      const { tipo, mIndex } = indexObj;
-      const modulos = [];
-      dadosCache[tipo].forEach(frente => frente.modulos.forEach(m => modulos.push(m)));
-      const modulo = modulos[mIndex];
-      if (!modulo) return;
-
-      const filtrados = modulo.cenarios.filter(c =>
-        filtroAtual === "todos" ||
-        (filtroAtual === "pass" && /PASS|Pass/i.test(c.status)) ||
-        (filtroAtual === "fail" && /FAIL|Fail/i.test(c.status))
-      );
-
-      document.getElementById("modal-title").textContent = `${modulo.nome} (${modulo.key})`;
-      document.getElementById("modal-body").innerHTML =
-        filtrados.length === 0
-          ? '<div class="no-data">Nenhum cenário.</div>'
-          : filtrados.map(c => gerarLinhaCenario(c, tipo)).join('');
-
-      const btnTodos = document.getElementById("btn-executar-todos-modal");
-      btnTodos.style.display = "block";
-      btnTodos.onclick = () => executarModuloInteiro(modulo.key, modulo.nome, tipo);
-
-      document.getElementById("modal").classList.add("active");
-    };
-
-    window.abrirModalGeral = function(idx) {
-      const todosModulos = [];
-      ["WEB", "API", "MOBILE"].forEach(t => {
-        dadosCache[t]?.forEach(frente => frente.modulos.forEach(m => todosModulos.push({ ...m, tipo: t })));
-      });
-      const modulo = todosModulos[idx];
-      if (!modulo) return;
-
-      const filtrados = modulo.cenarios.filter(c =>
-        filtroAtual === "todos" ||
-        (filtroAtual === "pass" && /PASS|Pass/i.test(c.status)) ||
-        (filtroAtual === "fail" && /FAIL|Fail/i.test(c.status))
-      );
-
-      document.getElementById("modal-title").textContent = `${modulo.nome} (${modulo.key}) — ${modulo.tipo}`;
-      document.getElementById("modal-body").innerHTML =
-        filtrados.length === 0
-          ? '<div class="no-data">Nenhum cenário.</div>'
-          : filtrados.map(c => gerarLinhaCenario(c, modulo.tipo)).join('');
-
-      const btnTodos = document.getElementById("btn-executar-todos-modal");
-      btnTodos.style.display = "block";
-      btnTodos.onclick = () => executarModuloInteiro(modulo.key, modulo.nome, modulo.tipo);
-
-      document.getElementById("modal").classList.add("active");
-    };
-
-    function abrirModalChart(tipo, status) {
-      document.querySelectorAll('.chart-card').forEach(c => c.classList.remove('active'));
-      document.querySelector(`[data-tipo="${tipo === 'geral' ? 'geral' : tipo}"]`).classList.add('active');
-
-      let cenarios = [];
-      if (tipo === 'geral') {
-        Object.values(dadosCache).forEach(t => t.forEach(f => f.modulos.forEach(m => cenarios.push(...m.cenarios))));
-      } else {
-        dadosCache[tipo]?.forEach(f => f.modulos.forEach(m => cenarios.push(...m.cenarios)));
-      }
-
-      const filtered = cenarios.filter(c =>
-        !status || (status === 'PASS' && /PASS|Pass/i.test(c.status)) || (status === 'FAIL' && /FAIL|Fail/i.test(c.status))
-      );
-
-      document.getElementById("modal-title").textContent = `${tipo.toUpperCase()} - ${status || 'TODOS'}`;
-      document.getElementById("modal-body").innerHTML =
-        filtered.length === 0
-          ? '<div class="no-data">Nenhum cenário.</div>'
-          : filtered.map(c => gerarLinhaCenario(c, tipo === 'geral' ? null : tipo)).join('');
-
-      document.getElementById("btn-executar-todos-modal").style.display = "none";
-      document.getElementById("modal").classList.add("active");
-    }
-
-    function fecharModal() {
-      document.getElementById("modal").classList.remove("active");
-      document.querySelectorAll('.chart-card').forEach(c => c.classList.remove('active'));
-      document.getElementById("btn-executar-todos-modal").style.display = "none";
-    }
-
-    window.onclick = event => {
-      if (event.target === document.getElementById("modal")) fecharModal();
-    };
 
     function detectarTipo(nome) {
       const lower = nome.toLowerCase();
-      if (lower.includes("web")) return "WEB";
-      if (lower.includes("api")) return "API";
+      if (lower.includes("web") || lower.includes("frontend")) return "WEB";
+      if (lower.includes("api") || lower.includes("backend")) return "API";
       if (lower.includes("mobile") || lower.includes("app")) return "MOBILE";
       return null;
     }
@@ -747,6 +523,8 @@
     }
 
     async function buscarJQL(jql) {
+      // CORRIGIDO: O endpoint /rest/api/3/search foi descontinuado (HTTP 410).
+      // Migrando para o endpoint recomendado: /rest/api/3/search/jql
       const base = "https://idea-maker.atlassian.net/rest/api/3/search/jql";
       const params = new URLSearchParams({ jql, fields: "key,summary,status", maxResults: 200 });
       const targetUrl = `${base}?${params.toString()}`;
@@ -755,7 +533,13 @@
       const response = await fetch(proxyUrl);
       if (!response.ok) {
         const text = await response.text().catch(() => 'Erro desconhecido');
-        throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+        const status = response.status;
+        let msg = `O JIRA Proxy retornou um erro HTTP ${status}.`;
+        if (status === 410) msg = "O endpoint do JIRA foi descontinuado. A API precisa ser corrigida.";
+        if (status === 404) msg = "O JIRA não encontrou a Issue Raiz ou os Test Plans associados.";
+        if (status === 500) msg = "Erro interno do JIRA Proxy ou do JIRA Cloud.";
+        // Incluindo o JQL na mensagem de erro para debug
+        throw new Error(msg + (text ? `<br>Detalhes: ${text.substring(0, 200)}...` : '') + `<br>JQL usada: ${jql.substring(0, 100)}...`);
       }
 
       const json = await response.json();
@@ -766,6 +550,586 @@
       }));
     }
 
+    // --- EVENT LISTENERS E NAVEGAÇÃO ---
+    document.querySelectorAll('.filtro-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroAtual = btn.dataset.filtro;
+        renderizarComFiltro();
+        atualizarCharts();
+      });
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        abaAtual = link.dataset.aba;
+        renderizarComFiltro();
+      });
+    });
+
+    // --- LÓGICA DE CARREGAMENTO E DADOS ---
+    async function carregar(forcar = false) {
+      if (!RAIZ) return;
+      const CACHE_KEY = `jira-${RAIZ}-dashboard`;
+      const cache = localStorage.getItem(CACHE_KEY);
+      const agora = Date.now();
+
+      if (!forcar && cache) {
+        const dados = JSON.parse(cache);
+        if (dados.timestamp > agora - 1000 * 60 * 30) {
+          dadosCache = dados.data;
+          mostrarToast(`Dados carregados do cache (há ${Math.floor((agora - dados.timestamp) / 60000)} min)`, "success");
+          renderizarCompleto();
+          return;
+        }
+      }
+
+      document.getElementById("conteudo-aba").innerHTML = '<div class="loading">Carregando dados...</div>';
+      let isMock = RAIZ.toLowerCase() === "mock";
+
+      try {
+        let hierarquia;
+        if (isMock) {
+            hierarquia = JSON.parse(JSON.stringify(MOCK_DATA));
+            // Simular cálculo de stats no MOCK_DATA
+            Object.keys(hierarquia).forEach(tipo => {
+                if (tipo === "BUGS") return; // Ignora BUGS
+                hierarquia[tipo].forEach(frente => {
+                    let total = 0, pass = 0, fail = 0;
+                    frente.modulos.forEach(mod => {
+                        const t = mod.cenarios.length;
+                        const p = mod.cenarios.filter(c => /PASS|Pass/i.test(c.status)).length;
+                        const f = mod.cenarios.filter(c => /FAIL|Fail/i.test(c.status)).length;
+                        mod.stats = { total: t, pass: p, fail: f, perc: t > 0 ? Math.round((p / t) * 100) : 0 };
+                        total += t; pass += p; fail += f;
+                    });
+                    frente.stats = { total, pass, fail };
+                });
+            });
+            mostrarToast("Modo MOCK: Dados carregados para demonstração", "success");
+        } else {
+            // Lógica real de busca no JIRA (mantida)
+            const JQL_MODULOS = `project = "IDEA+CASH" AND issuetype = "Test Plan" AND issue in linkedIssues(${RAIZ}) AND key != IC-820 AND key not in linkedIssues(IC-820)`;
+            const frentes = await buscarJQL(JQL_MODULOS) || [];
+            hierarquia = { WEB: [], API: [], MOBILE: [], BUGS: { bugsTotal: [], bugsRetest: [] } }; // Adicionado BUGS
+
+            for (const frente of frentes) {
+                const tipo = detectarTipo(frente.nome);
+                if (!hierarquia[tipo]) continue;
+
+                const modulos = await buscarModulos(frente.key);
+                const statsFrente = { total: 0, pass: 0, fail: 0 };
+
+                for (const modulo of modulos) {
+                    const cenarios = await buscarJQL(`project = "IDEA+CASH" AND parent = ${modulo.key} AND issuetype = "Test Case"`) || [];
+                    const total = cenarios.length;
+                    const pass = cenarios.filter(c => /PASS|Pass/i.test(c.status)).length;
+                    const fail = cenarios.filter(c => /FAIL|Fail/i.test(c.status)).length;
+
+                    statsFrente.total += total;
+                    statsFrente.pass += pass;
+                    statsFrente.fail += fail;
+
+                    modulo.cenarios = cenarios;
+                    modulo.stats = { total, pass, fail, perc: total > 0 ? Math.round((pass / total) * 100) : 0 };
+                }
+
+                hierarquia[tipo].push({ frente, modulos, stats: statsFrente });
+            }
+
+            // --- NOVO: Busca de Sub-bugs (CORRIGIDO PARA SUB-TASK) ---
+            // A maior probabilidade é que o tipo de issue seja "Sub-bug" (Tarefa Subordinada)
+            const jqlBugsTotal = `project = "IDEA+CASH" AND issuetype = "Sub-bug" AND status != "NOVA IDEA" AND status != "CONCLUIDO"`;
+            const jqlBugsRetest = `project = "IDEA+CASH" AND issuetype = "Sub-bug" AND status = "Disponível para Testes"`;
+
+            const bugsTotal = await buscarJQL(jqlBugsTotal);
+            const bugsRetest = await buscarJQL(jqlBugsRetest);
+
+            hierarquia.BUGS = {
+                bugsTotal: bugsTotal,
+                bugsRetest: bugsRetest
+            };
+            // --- FIM NOVO: Busca de Sub-bugs ---
+
+            mostrarToast("Dados JIRA carregados com sucesso!", "success");
+        }
+
+        const dados = { data: hierarquia, timestamp: agora };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(dados));
+        dadosCache = hierarquia;
+        renderizarCompleto();
+      } catch (e) {
+        console.error("Erro ao carregar dados:", e);
+        const errorMessage = isMock ? "Dados MOCK incompletos" : `Falha no JIRA/Proxy: ${e.message}`;
+        document.getElementById("conteudo-aba").innerHTML = `<div class="error">
+            <h2>🚨 Erro Crítico</h2>
+            <p>${errorMessage}</p>
+            <small>Verifique se a Issue Raiz está correta ou se o proxy está acessível.</small>
+        </div>`;
+        if (cache) {
+          mostrarToast("Erro ao buscar dados, tentando usar cache local...", "error");
+          const dados = JSON.parse(cache);
+          dadosCache = dados.data;
+          // Não renderizar completo se der erro, pois o cache pode estar desatualizado
+          // Mas deixar o aviso na tela.
+        }
+      }
+    }
+
+    function renderizarCompleto() {
+      // Cria/Atualiza a instância dos gráficos (serão renderizados na Home)
+      criarCharts();
+      // Renderiza o conteúdo da aba atual (DASHBOARD ou Detalhe)
+      renderizarComFiltro();
+      document.getElementById("atualizacao").textContent = new Date().toLocaleTimeString();
+    }
+
+    // --- CÁLCULOS E RENDERS ---
+
+    function calcularEstatisticasGlobais() {
+      let totalGeral = 0, passGeral = 0, failGeral = 0;
+      ["WEB", "API", "MOBILE"].forEach(tipo => {
+        if (dadosCache && dadosCache[tipo]) {
+            dadosCache[tipo].forEach(frente => {
+                totalGeral += frente.stats.total;
+                passGeral += frente.stats.pass;
+                failGeral += frente.stats.fail;
+            });
+        }
+      });
+      return { totalGeral, passGeral, failGeral };
+    }
+
+    // NOVO: Função para calcular estatísticas dos bugs
+    function calcularEstatisticasBugs() {
+        if (!dadosCache || !dadosCache.BUGS) return { totalBugs: 0, retestBugs: 0, bugsTotalList: [], bugsRetestList: [] };
+
+        const bugsTotalList = dadosCache.BUGS.bugsTotal || [];
+        const bugsRetestList = dadosCache.BUGS.bugsRetest || [];
+
+        return {
+            totalBugs: bugsTotalList.length,
+            retestBugs: bugsRetestList.length,
+            bugsTotalList,
+            bugsRetestList
+        };
+    }
+
+    function calcularStatsPorTipo(tipo) {
+        if (!dadosCache || !dadosCache[tipo]) return { total: 0, pass: 0, fail: 0 };
+        const frentes = dadosCache[tipo];
+        const total = frentes.reduce((s, f) => s + f.stats.total, 0);
+        const pass = frentes.reduce((s, f) => s + f.stats.pass, 0);
+        const fail = frentes.reduce((s, f) => s + f.stats.fail, 0);
+        return { total, pass, fail };
+    }
+
+    function calcularFiltrado(tipoAlvo = "todos") {
+      let total = 0, pass = 0, fail = 0;
+      const tipos = tipoAlvo === "todos" || tipoAlvo === "geral" ? ["WEB", "API", "MOBILE"] : [tipoAlvo];
+
+      tipos.forEach(tipo => {
+        if (dadosCache && dadosCache[tipo]) {
+            dadosCache[tipo].forEach(frente => {
+                frente.modulos.forEach(modulo => {
+                    const cenariosFiltrados = modulo.cenarios.filter(c => {
+                        if (filtroAtual === "todos") return true;
+                        if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
+                        if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
+                        return true;
+                    });
+                    total += cenariosFiltrados.length;
+                    pass += cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
+                    fail += cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
+                });
+            });
+        }
+      });
+      return { total, pass, fail };
+    }
+
+    // CORREÇÃO: Acessa a propriedade 'chart' antes de chamar destroy()
+    function criarCharts() {
+        // Destrói gráficos existentes para evitar ID/memória leak
+        Object.values(charts).forEach(item => {
+            if (item && item.chart) {
+                item.chart.destroy();
+            }
+        });
+        charts = {};
+
+        const tipos = ["WEB", "API", "MOBILE", "GERAL"];
+        const container = document.getElementById('charts-container-hidden') || document.createElement('div');
+        container.id = 'charts-container-hidden';
+        container.style.display = 'none';
+        document.body.appendChild(container);
+        container.innerHTML = '';
+
+        tipos.forEach(tipo => {
+            const { totalGeral, passGeral, failGeral } = calcularEstatisticasGlobais();
+            const stats = tipo === 'GERAL' ? { pass: passGeral, fail: failGeral, total: totalGeral } : calcularStatsPorTipo(tipo);
+            const total = stats.total;
+            const pass = stats.pass;
+            const fail = stats.fail;
+
+            if (total === 0) return;
+
+            // Cria um canvas temporário para o Chart.js gerenciar a instância
+            const canvasId = `chart-${tipo}`;
+            const canvas = document.createElement('canvas');
+            canvas.id = canvasId;
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            const data = [pass, fail, total - pass - fail];
+
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                cutout: '80%', animation: { duration: 1600, easing: 'easeOutQuart' }, events: ['click']
+            };
+
+            const newChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#10b981', '#ef4444', '#334155'],
+                        borderColor: ['#10b981', '#ef4444', '#334155'],
+                        borderWidth: 3, borderRadius: 1, hoverOffset: 8
+                    }]
+                },
+                options: chartOptions
+            });
+            charts[tipo] = { chart: newChart, config: newChart.config };
+
+            // Adiciona o listener no canvas temporário
+            canvas.addEventListener('click', (e) => {
+                // Acessa o chart correto
+                const points = charts[tipo].chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+                if (!points.length) return;
+                const index = points[0].index;
+                const status = index === 0 ? 'PASS' : index === 1 ? 'FAIL' : null;
+                if (status) abrirModalChart(tipo, status);
+            });
+        });
+        atualizarCharts();
+    }
+
+    function atualizarCharts() {
+        const tipos = ["WEB", "API", "MOBILE", "GERAL"];
+
+        tipos.forEach(tipo => {
+            if (!charts[tipo] || !charts[tipo].chart) return;
+
+            const stats = calcularFiltrado(tipo === 'GERAL' ? 'todos' : tipo);
+
+            let data;
+            if (filtroAtual === "todos") {
+                data = [stats.pass, stats.fail, stats.total - stats.pass - stats.fail];
+            } else if (filtroAtual === "pass") {
+                data = [stats.pass, 0, 0];
+            } else { // fail
+                data = [0, stats.fail, stats.total - stats.pass - stats.fail];
+            }
+
+            charts[tipo].chart.data.datasets[0].data = data;
+            charts[tipo].chart.update('quiet');
+
+            const total = stats.total;
+            const pass = stats.pass;
+            const perc = total > 0 ? Math.round((pass / total) * 100) : 0;
+
+            // Atualiza os labels visíveis (na home)
+            const labelElement = document.getElementById(`label-${tipo}-home`);
+            if (labelElement) labelElement.textContent = perc + '%';
+        });
+
+        if (abaAtual === "DASHBOARD") renderizarHome();
+    }
+
+
+    function renderizarHome() {
+        if (!dadosCache) {
+            document.getElementById("conteudo-aba").innerHTML = `<div class="empty">Carregue a Issue Raiz para exibir as métricas.</div>`;
+            return;
+        }
+
+        const statsGeral = calcularFiltrado('geral');
+        const { total: totalGeral, pass: passGeral, fail: failGeral } = statsGeral;
+        const percGeral = totalGeral > 0 ? Math.round((passGeral / totalGeral) * 100) : 0;
+        const pendingGeral = totalGeral - passGeral - failGeral;
+
+        // NOVO: Dados de Sub-bugs
+        const { totalBugs, retestBugs } = calcularEstatisticasBugs();
+
+
+        let html = `
+            <div class="dashboard-home">
+                <div class="stats-card" style="grid-column: span 2; background: linear-gradient(135deg, #1e182e 0%, #2a203d 100%);">
+                    <div class="title-card">Status de Aprovação Geral (${filtroAtual.toUpperCase()})</div>
+                    <div class="big-number ${percGeral >= 80 ? 'success-text' : percGeral >= 50 ? 'primary-text' : 'danger-text'}">${percGeral}%</div>
+                    <div style="font-size: 1.1em; color: var(--text-muted);">
+                        Total de Cenários: <span class="total-text">${totalGeral}</span> |
+                        Aprovados: <span class="success-text">${passGeral}</span> |
+                        Falhas: <span class="danger-text">${failGeral}</span>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="title-card">Cenários Falhando</div>
+                    <div class="big-number danger-text">${failGeral}</div>
+                    <div style="color: var(--text-muted);">Cenários que impedem a aprovação da Issue.</div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="title-card">Cenários Pendentes/Inativos</div>
+                    <div class="big-number primary-text">${pendingGeral}</div>
+                    <div style="color: var(--text-muted);">A serem implementados ou com status Desconhecido.</div>
+                </div>
+
+                <div class="stats-card" onclick="abrirModalJiraIssues('Sub-bugs Ativos', 'bugTotal')" style="cursor: pointer; border-left: 5px solid ${totalBugs > 0 ? 'var(--danger)' : 'var(--success)'};">
+                    <div class="title-card">SUB-BUGS ATIVOS</div>
+                    <div class="big-number ${totalBugs > 0 ? 'danger-text' : 'success-text'}">${totalBugs}</div>
+                    <div style="color: var(--text-muted);">Sub-bugs abertos ou em andamento.</div>
+                </div>
+
+                ${retestBugs > 0 ? `
+                <div class="stats-card" onclick="abrirModalJiraIssues('Bugs p/ Reteste', 'bugRetest')" style="cursor: pointer; border-left: 5px solid #47f7ff; box-shadow: 0 4px 15px rgba(71, 247, 255, 0.4);">
+                    <div class="title-card" style="color: #47f7ff;">🚨 BUGS PARA RETESTAR</div>
+                    <div class="big-number primary-text">${retestBugs}</div>
+                    <div style="color: var(--text-muted);">Bugs corrigidos e prontos para verificação de testes.</div>
+                </div>
+                ` : ''}
+
+            </div>
+
+            <h2>Métricas por Frente</h2>
+            <br>
+            <div class="charts-container-home">`;
+
+        // Renderiza os gráficos Doughnut (incluindo GERAL)
+        ["WEB", "API", "MOBILE", "GERAL"].forEach(tipo => {
+            if (charts[tipo]) {
+                const stats = calcularFiltrado(tipo === 'GERAL' ? 'todos' : tipo);
+                const perc = stats.total > 0 ? Math.round((stats.pass / stats.total) * 100) : 0;
+
+                html += `
+                    <div class="chart-card-home" data-tipo="${tipo}">
+                        <h3>${tipo}</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-${tipo}-home"></canvas>
+                            <div class="chart-label-home" id="label-${tipo}-home">${perc}%</div>
+                        </div>
+                    </div>`;
+            }
+        });
+
+        html += `</div>`;
+        document.getElementById("conteudo-aba").innerHTML = html;
+
+        // Re-inicia os gráficos Chart.js nos novos canvas
+        ["WEB", "API", "MOBILE", "GERAL"].forEach(tipo => {
+            if (charts[tipo]) {
+                const ctxHome = document.getElementById(`chart-${tipo}-home`);
+                if (ctxHome) {
+                    // Recria o gráfico usando a configuração armazenada
+                    const newChart = new Chart(ctxHome.getContext('2d'), charts[tipo].config);
+                    // Adiciona o listener para o modal no novo canvas
+                    ctxHome.addEventListener('click', (e) => {
+                        const points = newChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+                        if (!points.length) return;
+                        const index = points[0].index;
+                        const status = index === 0 ? 'PASS' : index === 1 ? 'FAIL' : null;
+                        if (status) abrirModalChart(tipo, status);
+                    });
+                    // Atualiza os dados imediatamente com o filtro atual
+                    charts[tipo].chart.data.datasets[0].data = newChart.data.datasets[0].data;
+                    newChart.update('none'); // força a renderização
+                }
+            }
+        });
+    }
+
+
+    function renderizarComFiltro() {
+      let html = '';
+      const tipos = ["WEB", "API", "MOBILE"];
+      const container = document.getElementById("conteudo-aba");
+
+      if (!dadosCache) {
+          container.innerHTML = `<div class="empty">Carregue a Issue Raiz para exibir os detalhes.</div>`;
+          return;
+      }
+
+      if (abaAtual === "DASHBOARD") {
+        renderizarHome();
+        return;
+      }
+
+      const abaParaIterar = abaAtual === "GERAL" ? tipos : [abaAtual];
+
+      let todosModulos = [];
+      abaParaIterar.forEach(tipo => {
+          const frentes = dadosCache[tipo] || [];
+          frentes.forEach(frente => {
+              frente.modulos.forEach(modulo => {
+                  const cenariosFiltrados = modulo.cenarios.filter(c => {
+                      if (filtroAtual === "todos") return true;
+                      if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
+                      if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
+                      return true;
+                  });
+                  // Garante que a seção de módulos não suma totalmente se o filtro for "todos"
+                  if (cenariosFiltrados.length > 0 || filtroAtual === "todos") {
+                      const clone = JSON.parse(JSON.stringify(modulo));
+                      clone.cenarios = cenariosFiltrados;
+                      clone.stats.total = cenariosFiltrados.length;
+                      clone.stats.pass = cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
+                      clone.stats.fail = cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
+                      clone.stats.perc = clone.stats.total > 0 ? Math.round((clone.stats.pass / clone.stats.total) * 100) : 0;
+                      todosModulos.push({ ...clone, tipo });
+                  }
+              });
+          });
+      });
+
+      if (todosModulos.length === 0) {
+        html = `<div class="empty">Nenhum cenário filtrado encontrado em ${abaAtual}.</div>`;
+      } else {
+        const total = todosModulos.reduce((s, m) => s + m.stats.total, 0);
+        const pass = todosModulos.reduce((s, m) => s + m.stats.pass, 0);
+        const fail = todosModulos.reduce((s, m) => s + m.stats.fail, 0);
+        const perc = total > 0 ? Math.round((pass / total) * 100) : 0;
+
+        const nomeAba = abaAtual === "GERAL" ? "VISÃO GERAL" : abaAtual;
+        const corHeader = abaAtual === "GERAL" ? "background: var(--primary-light);" : "";
+
+        html += `<div class="tipo"><div class="tipo-header" style="${corHeader}"><h2>${nomeAba}</h2><div class="tipo-resumo">${total} cenários | ${pass} PASS | ${fail} FAIL | ${perc}% aprovado</div></div>`;
+
+        todosModulos.forEach((modulo) => {
+            const moduloTipo = modulo.tipo;
+
+            html += `
+              <div class="modulo">
+                <h3>${modulo.nome} (${modulo.key}) ${abaAtual === "GERAL" ? `<small style="color:#94a3b8">— ${moduloTipo}</small>` : ''}</h3>
+                <div class="stats">
+                  <div class="stat">Total: ${modulo.stats.total}</div>
+                  <div class="stat" style="color:var(--success)">Pass: ${modulo.stats.pass}</div>
+                  <div class="stat" style="color:var(--danger)">Fail: ${modulo.stats.fail}</div>
+                  <div class="stat">Aprovação: ${modulo.stats.perc}%</div>
+                </div>
+                <div class="progress"><div class="bar" style="width:${modulo.stats.perc}%"></div></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 12px; gap: 12px;">
+                  <button class="btn-cenarios" onclick="abrirModalPorKey('${modulo.key}', '${moduloTipo}')">Ver cenários</button>
+                  <button class="btn-executar-modulo" onclick="executarModuloInteiro('${modulo.key}', '${modulo.nome.replace(/'/g, "\\'")}', '${moduloTipo}')">
+                    EXECUTAR MÓDULO
+                  </button>
+                </div>
+              </div>`;
+        });
+        html += `</div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // --- MODAL FUNCTIONS (Reforçadas) ---
+    window.abrirModalPorKey = function(moduloKey, tipo) {
+        if (!dadosCache || !dadosCache[tipo]) return;
+
+        let modulo = null;
+        dadosCache[tipo].forEach(frente => {
+            if (modulo) return;
+            modulo = frente.modulos.find(m => m.key === moduloKey);
+        });
+
+        if (!modulo) {
+            mostrarToast(`Módulo ${moduloKey} não encontrado para o tipo ${tipo}.`, "error");
+            return;
+        }
+
+        const cenariosFiltrados = modulo.cenarios.filter(c => {
+            // Apenas para cenários de automação (não para Sub-bugs)
+            if (filtroAtual === "todos") return true;
+            if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
+            if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
+            return true;
+        });
+
+        document.getElementById("modal-title").textContent = `${modulo.nome} (${modulo.key})`;
+        document.getElementById("modal-body").innerHTML =
+            cenariosFiltrados.length === 0
+            ? '<div class="no-data">Nenhum cenário.</div>'
+            : cenariosFiltrados.map(c => gerarLinhaCenario(c, tipo)).join('');
+
+        const btnTodos = document.getElementById("btn-executar-todos-modal");
+        btnTodos.style.display = "block";
+        btnTodos.onclick = () => executarModuloInteiro(modulo.key, modulo.nome, tipo);
+
+        document.getElementById("modal").classList.add("active");
+    };
+
+    // NOVO: Função para abrir modal de lista de Issues JIRA (Sub-bugs)
+    window.abrirModalJiraIssues = function(titulo, tipoLista) {
+        if (!dadosCache || !dadosCache.BUGS) return;
+
+        let issues = [];
+        if (tipoLista === 'bugTotal') {
+            issues = dadosCache.BUGS.bugsTotal || [];
+        } else if (tipoLista === 'bugRetest') {
+            issues = dadosCache.BUGS.bugsRetest || [];
+        } else {
+            return;
+        }
+
+        document.getElementById("modal-title").textContent = `${titulo} (${issues.length} Issues)`;
+
+        // Renderiza as issues
+        document.getElementById("modal-body").innerHTML =
+            issues.length === 0
+            ? '<div class="no-data">Nenhum Sub-bug encontrado.</div>'
+            : issues.map(i => gerarLinhaIssue(i)).join('');
+
+        document.getElementById("btn-executar-todos-modal").style.display = "none";
+        document.getElementById("modal").classList.add("active");
+    }
+
+
+    function abrirModalChart(tipo, status) {
+      // Lógica do modal de gráficos (mantida)
+      let cenarios = [];
+      const tiposAlvo = tipo === 'GERAL' ? ["WEB", "API", "MOBILE"] : [tipo];
+
+      tiposAlvo.forEach(t => {
+          dadosCache[t]?.forEach(f => f.modulos.forEach(m => cenarios.push(...m.cenarios.map(c => ({...c, tipo: t})))));
+      });
+
+      const filtered = cenarios.filter(c =>
+        !status || (status === 'PASS' && /PASS|Pass/i.test(c.status)) || (status === 'FAIL' && /FAIL|Fail/i.test(c.status))
+      );
+
+      document.getElementById("modal-title").textContent = `${tipo.toUpperCase()} - Cenários ${status || 'TODOS'}`;
+      document.getElementById("modal-body").innerHTML =
+        filtered.length === 0
+          ? '<div class="no-data">Nenhum cenário.</div>'
+          : filtered.map(c => gerarLinhaCenario(c, c.tipo)).join('');
+
+      document.getElementById("btn-executar-todos-modal").style.display = "none";
+      document.getElementById("modal").classList.add("active");
+    }
+
+    function fecharModal() {
+      document.getElementById("modal").classList.remove("active");
+      document.getElementById("btn-executar-todos-modal").style.display = "none";
+    }
+
+    window.onclick = event => {
+      if (event.target === document.getElementById("modal")) fecharModal();
+    };
+
     window.onload = () => {
       const input = document.getElementById("input-raiz");
       input.addEventListener("input", onInputRaiz);
@@ -775,6 +1139,8 @@
       if (raizURL) {
         input.value = raizURL;
         RAIZ = raizURL;
+        // Ativa o DASHBOARD e carrega
+        document.querySelector('.nav-link[data-aba="DASHBOARD"]').classList.add('active');
         carregar(false);
       } else {
         input.focus();
