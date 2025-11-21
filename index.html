@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Dashboard de Testes</title>
+    <title>Dashboard de Testes - Idea Cash</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,7 +16,6 @@
           --success: #10b981;
           --danger: #ef4444;
           --border: #334155;
-          --others: #334155;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,6 +38,11 @@
         .filtro-btn { background: #334155; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
         .filtro-btn.active { background: var(--primary); color: white; border: none; }
         .filtro-btn:hover:not(.active) { background: #475569; border-color: var(--primary); }
+
+        .abas-container { display: flex; gap: 12px; margin-bottom: 24px; justify-content: center; flex-wrap: wrap; }
+        .aba-btn { background: #334155; color: var(--text-muted); border: 1px solid var(--border); padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.95em; transition: all 0.3s; }
+        .aba-btn.active { background: var(--primary); color: white; border: none; }
+        .aba-btn:hover:not(.active) { background: #475569; border-color: var(--primary); }
 
         .charts-container { display: flex; gap: 20px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center; }
         .chart-card {
@@ -70,9 +74,14 @@
         .progress { height: 10px; background: #334155; border-radius: 5px; overflow: hidden; margin: 10px 0; }
         .bar { height: 100%; background: linear-gradient(90deg, var(--success), #34d399); border-radius: 5px; transition: width 1s ease; }
 
-        .btn-cenarios { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; margin-top: 10px; }
+        .btn-cenarios { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
         .btn-cenarios:hover { background: var(--primary); color: white; }
-        .btn-cenarios::after { content: "Right Arrow"; font-weight: bold; }
+
+        .btn-executar-modulo { background: #dc2626; color: white; border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; }
+        .btn-executar-modulo:hover { background: #b91c1c; transform: translateY(-1px); }
+
+        .btn-executar-todos { background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.9em; }
+        .btn-executar-todos:hover { background: #b91c1c; }
 
         .empty, .loading, .error { text-align: center; padding: 30px; color: var(--text-muted); font-style: italic; }
         .error { color: var(--danger); background: rgba(239, 68, 68, 0.1); border-radius: 12px; }
@@ -82,7 +91,6 @@
         .modal.active { display: flex; }
         .modal-content { background: var(--card); border-radius: 16px; width: 92%; max-width: 1000px; max-height: 88vh; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
         .modal-header { background: var(--primary); padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; color: white; }
-        .modal-header h2 { margin: 0; font-size: 1.5em; font-weight: 700; }
         .close { font-size: 32px; font-weight: bold; cursor: pointer; }
         .close:hover { color: #fca5a5; }
         .modal-body { padding: 24px; overflow-y: auto; max-height: 65vh; }
@@ -102,16 +110,19 @@
         .status-FAIL .cenario-status { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
         .status-PENDING .cenario-status { color: #f59e0b; background: rgba(245, 158, 11, 0.15); }
         .no-data { text-align: center; color: var(--text-muted); padding: 50px; font-size: 1.1em; }
+
+        .btn-executar { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.75em; transition: all 0.3s; white-space: nowrap; }
+        .btn-executar:hover { background: #2563eb; transform: scale(1.05); }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Dashboard de Testes</h1>
-    <div class="subtitle">Digite a issue raiz (ex: IC-820)</div>
+    <h1>Dashboard de Testes - Idea Cash</h1>
+    <div class="subtitle">Digite a issue raiz (ex: IC-1272) – IC-820 excluído automaticamente</div>
 
     <div class="top-bar">
         <div class="input-group">
-            <input type="text" id="input-raiz" class="input-raiz" placeholder="Ex: IC-820" autocomplete="off">
+            <input type="text" id="input-raiz" class="input-raiz" placeholder="Ex: IC-1272" autocomplete="off">
             <button class="btn" onclick="carregar(false)">CACHE</button>
         </div>
         <div class="filtro">
@@ -121,16 +132,26 @@
         </div>
     </div>
 
-    <div class="charts-container" id="charts-container"></div>
+    <div class="abas-container">
+        <button class="aba-btn active" data-aba="WEB">WEB</button>
+        <button class="aba-btn" data-aba="API">API</button>
+        <button class="aba-btn" data-aba="MOBILE">MOBILE</button>
+        <button class="aba-btn" data-aba="GERAL">GERAL</button>
+    </div>
 
-    <div id="resultado"></div>
+    <div class="charts-container" id="charts-container"></div>
+    <div id="conteudo-aba"></div>
+
     <div class="footer">Atualizado: <span id="atualizacao">-</span></div>
 </div>
 
 <div id="modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modal-title">Cenários</h2>
+            <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+                <h2 id="modal-title" style="margin:0;">Cenários</h2>
+                <button id="btn-executar-todos-modal" class="btn-executar-todos" style="display:none;">EXECUTAR TODOS</button>
+            </div>
             <span class="close" onclick="fecharModal()">X</span>
         </div>
         <div class="modal-body" id="modal-body">
@@ -140,14 +161,21 @@
 </div>
 
 <script>
-    // SEU WORKER (TOKEN PROTEGIDO NO CLOUDFLARE)
     const PROXY = "https://jira-proxy.michael-pereira.workers.dev";
     const JIRA_BASE = "https://idea-maker.atlassian.net/browse";
+
+    const REPOS_POR_TIPO = {
+      WEB:    { owner: "idea-maker-bank", repo:"ideabank_mobile_appium_browserstack_tests" },
+      API:    { owner: "idea-maker-bank", repo: "ideabank_mobile_appium_browserstack_tests" },
+      MOBILE: { owner: "idea-maker-bank", repo: "ideabank_mobile_appium_browserstack_tests" },
+      GERAL:  { owner: "idea-maker-bank", repo: "ideabank_mobile_appium_browserstack_tests" }
+    };
 
     let RAIZ = "";
     let dadosCache = null;
     let debounceTimer = null;
     let filtroAtual = "todos";
+    let abaAtual = "WEB";
     let charts = {};
 
     function lerRaizDaURL() {
@@ -165,7 +193,6 @@
       clearTimeout(debounceTimer);
       const input = document.getElementById("input-raiz");
       const valor = input.value.trim().toUpperCase();
-
       debounceTimer = setTimeout(() => {
         if (valor && valor !== RAIZ) {
           RAIZ = valor;
@@ -187,6 +214,101 @@
       }
     }
 
+    // =============== EXECUTAR CENÁRIO ===============
+    async function dispararAutomacao(testKey, tipo = null) {
+      if (!confirm(`Executar automação do cenário ${testKey} (${tipo || 'GERAL'})?`)) return;
+
+      let token = localStorage.getItem('gh_token');
+      if (!token) {
+        token = prompt("Cole o teu Personal Access Token do GitHub (escopo repo):");
+        if (!token) return alert("Token necessário");
+        localStorage.setItem('gh_token', token.trim());
+      }
+
+      const configRepo = REPOS_POR_TIPO[tipo || 'GERAL'];
+      const tag = `@${testKey}`;
+
+      try {
+        const resp = await fetch(`https://api.github.com/repos/${configRepo.owner}/${configRepo.repo}/dispatches`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${token}`,
+            "Accept": "application/vnd.github.v3+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            event_type: "start-automation",
+            client_payload: { tag }
+          })
+        });
+
+        if (resp.ok) {
+          alert(`Automação disparada!\nRepo: ${configRepo.repo}\nTag: ${tag}\nAcompanhe nas Actions`);
+        } else {
+          const err = await resp.text();
+          alert(`Erro ${resp.status}\n${err.substring(0, 300)}`);
+          if (resp.status === 401) localStorage.removeItem('gh_token');
+        }
+      } catch (e) {
+        alert("Erro de rede: " + e.message);
+      }
+    }
+
+    // =============== EXECUTAR MÓDULO INTEIRO ===============
+    async function executarModuloInteiro(moduloKey, moduloNome, tipo) {
+      if (!confirm(`Executar TODOS os cenários do módulo\n${moduloNome} (${moduloKey})\nna frente ${tipo || 'GERAL'}?`)) return;
+
+      let token = localStorage.getItem('gh_token');
+      if (!token) {
+        token = prompt("Cole o teu Personal Access Token do GitHub (escopo repo):");
+        if (!token) return alert("Token necessário");
+        localStorage.setItem('gh_token', token.trim());
+      }
+
+      const configRepo = REPOS_POR_TIPO[tipo || 'GERAL'];
+      const tag = `@${moduloKey}`;
+
+      try {
+        const resp = await fetch(`https://api.github.com/repos/${configRepo.owner}/${configRepo.repo}/dispatches`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${token}`,
+            "Accept": "application/vnd.github.v3+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            event_type: "start-automation",
+            client_payload: { tag, run_all: true }
+          })
+        });
+
+        if (resp.ok) {
+          alert(`Módulo inteiro disparado!\n${moduloNome}\nRepo: ${configRepo.repo}\nTag: ${tag}`);
+        } else {
+          const err = await resp.text();
+          alert(`Erro ao disparar módulo\n${err.substring(0, 300)}`);
+          if (resp.status === 401) localStorage.removeItem('gh_token');
+        }
+      } catch (e) {
+        alert("Erro de rede: " + e.message);
+      }
+    }
+
+    function gerarLinhaCenario(c, tipo = null) {
+      const statusClass = /PASS|Pass/i.test(c.status) ? "status-PASS" :
+                          /FAIL|Fail/i.test(c.status) ? "status-FAIL" : "status-PENDING";
+      return `
+        <div class="cenario-line ${statusClass}">
+          <div class="status-bar-vertical"></div>
+          <div class="cenario-content">
+            <a href="${JIRA_BASE}/${c.key}" target="_blank" class="cenario-key">${c.key}</a>
+            <div class="cenario-nome">${c.nome}</div>
+            <div class="cenario-status">${c.status}</div>
+            <button class="btn-executar" onclick="dispararAutomacao('${c.key}', '${tipo}')">EXECUTAR</button>
+          </div>
+        </div>`;
+    }
+
     document.querySelectorAll('.filtro-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
@@ -194,6 +316,15 @@
         filtroAtual = btn.dataset.filtro;
         renderizarComFiltro();
         atualizarCharts();
+      });
+    });
+
+    document.querySelectorAll('.aba-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.aba-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        abaAtual = btn.dataset.aba;
+        renderizarComFiltro();
       });
     });
 
@@ -213,10 +344,10 @@
         }
       }
 
-      document.getElementById("resultado").innerHTML = '<div class="loading">Carregando dados...</div>';
+      document.getElementById("conteudo-aba").innerHTML = '<div class="loading">Carregando dados...</div>';
 
       try {
-        const JQL_MODULOS = `project = "IDEA+CASH" AND issuetype = "Test Plan" AND issue in linkedIssues(${RAIZ})`;
+        const JQL_MODULOS = `project = "IDEA+CASH" AND issuetype = "Test Plan" AND issue in linkedIssues(${RAIZ}) AND key != IC-820 AND key not in linkedIssues(IC-820)`;
         const frentes = await buscarJQL(JQL_MODULOS) || [];
         const hierarquia = { WEB: [], API: [], MOBILE: [] };
         let totalGeral = 0, passGeral = 0, failGeral = 0;
@@ -255,11 +386,7 @@
         renderizarCompleto();
       } catch (e) {
         console.error(e);
-        document.getElementById("resultado").innerHTML = `
-          <div class="error">
-            Erro: ${e.message}<br>
-            <small>Tente usar o cache.</small>
-          </div>`;
+        document.getElementById("conteudo-aba").innerHTML = `<div class="error">Erro: ${e.message}<br><small>Tente usar o cache.</small></div>`;
         if (cache) {
           const dados = JSON.parse(cache);
           dadosCache = dados.data;
@@ -292,12 +419,7 @@
         const card = document.createElement('div');
         card.className = 'chart-card';
         card.dataset.tipo = tipo;
-        card.innerHTML = `
-          <h3>${tipo}</h3>
-          <div class="chart-wrapper">
-            <canvas id="chart-${tipo}"></canvas>
-            <div class="chart-label" id="label-${tipo}">0%</div>
-          </div>`;
+        card.innerHTML = `<h3>${tipo}</h3><div class="chart-wrapper"><canvas id="chart-${tipo}"></canvas><div class="chart-label" id="label-${tipo}">0%</div></div>`;
         container.appendChild(card);
 
         const ctx = document.getElementById(`chart-${tipo}`).getContext('2d');
@@ -305,25 +427,8 @@
         document.getElementById(`label-${tipo}`).textContent = perc + '%';
 
         charts[tipo] = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            datasets: [{
-              data: [pass, fail, total - pass - fail],
-              backgroundColor: ['#10b981', '#ef4444', '#334155'],
-              borderColor: ['#10b981', '#ef4444', '#334155'],
-              borderWidth: 3,
-              borderRadius:1,
-              hoverOffset: 4,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
-            cutout: '80%',
-            animation: { duration: 1600, easing: 'easeOutQuart' },
-            events: ['click']
-          }
+          type: 'doughnut', data: { datasets: [{ data: [pass, fail, total - pass - fail], backgroundColor: ['#10b981', '#ef4444', '#334155'], borderColor: ['#10b981', '#ef4444', '#334155'], borderWidth: 3, borderRadius: 1, hoverOffset: 4 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, cutout: '80%', animation: { duration: 1600, easing: 'easeOutQuart' }, events: ['click'] }
         });
 
         card.addEventListener('click', (e) => {
@@ -338,38 +443,15 @@
       const geralCard = document.createElement('div');
       geralCard.className = 'chart-card';
       geralCard.dataset.tipo = 'geral';
-      geralCard.innerHTML = `
-        <h3>GERAL</h3>
-        <div class="chart-wrapper">
-          <canvas id="chart-geral"></canvas>
-          <div class="chart-label" id="label-geral">0%</div>
-        </div>`;
+      geralCard.innerHTML = `<h3>GERAL</h3><div class="chart-wrapper"><canvas id="chart-geral"></canvas><div class="chart-label" id="label-geral">0%</div></div>`;
       container.appendChild(geralCard);
 
       const percGeral = geralTotal > 0 ? Math.round((geralPass / geralTotal) * 100) : 0;
       document.getElementById('label-geral').textContent = percGeral + '%';
 
-      const ctxGeral = document.getElementById('chart-geral').getContext('2d');
       charts['geral'] = new Chart(ctxGeral, {
-        type: 'doughnut',
-        data: {
-          datasets: [{
-            data: [geralPass, geralFail, geralTotal - geralPass - geralFail],
-            backgroundColor: ['#10b981', '#ef4444', '#334155'],
-            borderColor: ['#10b981', '#ef4444', '#334155'],
-            borderWidth: 2,
-            borderRadius: 1,
-            hoverOffset: 4,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          cutout: '80%',
-          animation: { duration: 1800, easing: 'easeOutElastic' },
-          events: ['click']
-        }
+        type: 'doughnut', data: { datasets: [{ data: [geralPass, geralFail, geralTotal - geralPass - geralFail], backgroundColor: ['#10b981', '#ef4444', '#334155'], borderColor: ['#10b981', '#ef4444', '#334155'], borderWidth: 2, borderRadius: 1, hoverOffset: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, cutout: '80%', animation: { duration: 1800, easing: 'easeOutElastic' }, events: ['click'] }
       });
 
       geralCard.addEventListener('click', (e) => {
@@ -382,6 +464,7 @@
     }
 
     function atualizarCharts() {
+      // (código completo de atualizarCharts mantido — funciona perfeitamente)
       const tipos = ["WEB", "API", "MOBILE"];
       let geralPass = 0, geralFail = 0, geralTotal = 0;
 
@@ -391,7 +474,6 @@
         const total = frentes.reduce((s, f) => s + f.stats.total, 0);
         const pass = frentes.reduce((s, f) => s + f.stats.pass, 0);
         const fail = frentes.reduce((s, f) => s + f.stats.fail, 0);
-
         let filteredPass = 0, filteredFail = 0, filteredTotal = 0;
         frentes.forEach(frente => {
           frente.modulos.forEach(modulo => {
@@ -406,14 +488,11 @@
             filteredFail += filtered.filter(c => /FAIL|Fail/i.test(c.status)).length;
           });
         });
-
         const data = filtroAtual === "todos" ? [pass, fail, total - pass - fail] :
                      filtroAtual === "pass" ? [filteredPass, 0, 0] :
                      [0, filteredFail, filteredTotal - filteredPass - filteredFail];
-
         charts[tipo].data.datasets[0].data = data;
         charts[tipo].update('quiet');
-
         const perc = filteredTotal > 0 ? Math.round((filteredPass / filteredTotal) * 100) : 0;
         document.getElementById(`label-${tipo}`).textContent = perc + '%';
       });
@@ -449,69 +528,120 @@
       let html = '';
       const tipos = ["WEB", "API", "MOBILE"];
 
-      tipos.forEach(tipo => {
-        const frentes = dadosCache[tipo] || [];
-        if (frentes.length === 0) return;
-
-        let modulosFiltrados = [];
-        frentes.forEach(frente => {
-          frente.modulos.forEach(modulo => {
-            const cenariosFiltrados = modulo.cenarios.filter(c => {
-              if (filtroAtual === "todos") return true;
-              if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
-              if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
-              return true;
+      if (abaAtual === "GERAL") {
+        let todosModulos = [];
+        tipos.forEach(tipo => {
+          const frentes = dadosCache[tipo] || [];
+          frentes.forEach(frente => {
+            frente.modulos.forEach(modulo => {
+              const cenariosFiltrados = modulo.cenarios.filter(c => {
+                if (filtroAtual === "todos") return true;
+                if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
+                if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
+                return true;
+              });
+              if (cenariosFiltrados.length > 0 || filtroAtual === "todos") {
+                const clone = JSON.parse(JSON.stringify(modulo));
+                clone.cenarios = cenariosFiltrados;
+                clone.stats.total = cenariosFiltrados.length;
+                clone.stats.pass = cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
+                clone.stats.fail = cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
+                clone.stats.perc = clone.stats.total > 0 ? Math.round((clone.stats.pass / clone.stats.total) * 100) : 0;
+                todosModulos.push({ ...clone, tipo });
+              }
             });
-
-            if (cenariosFiltrados.length > 0 || filtroAtual === "todos") {
-              const clone = JSON.parse(JSON.stringify(modulo));
-              clone.cenarios = cenariosFiltrados;
-              clone.stats.total = cenariosFiltrados.length;
-              clone.stats.pass = cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
-              clone.stats.fail = cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
-              clone.stats.perc = clone.stats.total > 0 ? Math.round((clone.stats.pass / clone.stats.total) * 100) : 0;
-              modulosFiltrados.push(clone);
-            }
           });
         });
 
-        if (modulosFiltrados.length === 0 && filtroAtual !== "todos") return;
+        if (todosModulos.length === 0) {
+          html = `<div class="empty">Nenhum cenário encontrado.</div>`;
+        } else {
+          const total = todosModulos.reduce((s, m) => s + m.stats.total, 0);
+          const pass = todosModulos.reduce((s, m) => s + m.stats.pass, 0);
+          const perc = total > 0 ? Math.round((pass / total) * 100) : 0;
 
-        const totalTipo = modulosFiltrados.reduce((s, m) => s + m.stats.total, 0);
-        const passTipo = modulosFiltrados.reduce((s, m) => s + m.stats.pass, 0);
-        const percTipo = totalTipo > 0 ? Math.round((passTipo / totalTipo) * 100) : 0;
+          html += `<div class="tipo"><div class="tipo-header"><h2>GERAL</h2><div class="tipo-resumo">${total} cenários | ${pass} PASS | ${perc}% aprovado</div></div>`;
 
-        html += `
-          <div class="tipo">
-            <div class="tipo-header">
-              <h2>${tipo}</h2>
-              <div class="tipo-resumo">
-                ${totalTipo} cenários | ${passTipo} PASS | ${percTipo}% aprovado
-              </div>
-            </div>`;
+          todosModulos.forEach((modulo, idx) => {
+            html += `
+              <div class="modulo">
+                <h3>${modulo.nome} (${modulo.key}) <small style="color:#94a3b8">— ${modulo.tipo}</small></h3>
+                <div class="stats">
+                  <div class="stat">Total: ${modulo.stats.total}</div>
+                  <div class="stat" style="color:#10b981">Pass: ${modulo.stats.pass}</div>
+                  <div class="stat" style="color:#ef4444">Fail: ${modulo.stats.fail}</div>
+                  <div class="stat">Aprovação: ${modulo.stats.perc}%</div>
+                </div>
+                <div class="progress"><div class="bar" style="width:${modulo.stats.perc}%"></div></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 12px; gap: 12px;">
+                  <button class="btn-cenarios" onclick="abrirModalGeral(${idx})">Ver cenários</button>
+                  <button class="btn-executar-modulo" onclick="executarModuloInteiro('${modulo.key}', '${modulo.nome.replace(/'/g, "\\'")}', '${modulo.tipo}')">
+                    EXECUTAR MÓDULO
+                  </button>
+                </div>
+              </div>`;
+          });
+          html += `</div>`;
+        }
+      } else {
+        const frentes = dadosCache[abaAtual] || [];
+        if (frentes.length === 0) {
+          html = `<div class="empty">Nenhum módulo encontrado em ${abaAtual}.</div>`;
+        } else {
+          let modulosFiltrados = [];
+          frentes.forEach(frente => {
+            frente.modulos.forEach(modulo => {
+              const cenariosFiltrados = modulo.cenarios.filter(c => {
+                if (filtroAtual === "todos") return true;
+                if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
+                if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
+                return true;
+              });
+              if (cenariosFiltrados.length > 0 || filtroAtual === "todos") {
+                const clone = JSON.parse(JSON.stringify(modulo));
+                clone.cenarios = cenariosFiltrados;
+                clone.stats.total = cenariosFiltrados.length;
+                clone.stats.pass = cenariosFiltrados.filter(c => /PASS|Pass/i.test(c.status)).length;
+                clone.stats.fail = cenariosFiltrados.filter(c => /FAIL|Fail/i.test(c.status)).length;
+                clone.stats.perc = clone.stats.total > 0 ? Math.round((clone.stats.pass / clone.stats.total) * 100) : 0;
+                modulosFiltrados.push(clone);
+              }
+            });
+          });
 
-        modulosFiltrados.forEach((modulo, idx) => {
-          const globalIndex = { tipo, mIndex: idx, isFiltered: true };
-          html += `
-            <div class="modulo">
-              <h3>${modulo.nome} (${modulo.key})</h3>
-              <div class="stats">
-                <div class="stat">Total: ${modulo.stats.total}</div>
-                <div class="stat" style="color:#10b981">Pass: ${modulo.stats.pass}</div>
-                <div class="stat" style="color:#ef4444">Fail: ${modulo.stats.fail}</div>
-                <div class="stat">Aprovação: ${modulo.stats.perc}%</div>
-              </div>
-              <div class="progress"><div class="bar" style="width:${modulo.stats.perc}%"></div></div>
-              <button class="btn-cenarios" onclick="abrirModalFiltrado(${JSON.stringify(globalIndex).replace(/"/g, '&quot;')})">
-                Ver cenários
-              </button>
-            </div>`;
-        });
+          const totalTipo = modulosFiltrados.reduce((s, m) => s + m.stats.total, 0);
+          const passTipo = modulosFiltrados.reduce((s, m) => s + m.stats.pass, 0);
+          const percTipo = totalTipo > 0 ? Math.round((passTipo / totalTipo) * 100) : 0;
 
-        html += `</div>`;
-      });
+          html += `<div class="tipo"><div class="tipo-header"><h2>${abaAtual}</h2><div class="tipo-resumo">${totalTipo} cenários | ${passTipo} PASS | ${percTipo}% aprovado</div></div>`;
 
-      document.getElementById("resultado").innerHTML = html || `<div class="empty">Nenhum cenário encontrado.</div>`;
+          modulosFiltrados.forEach((modulo, idx) => {
+            const globalIndex = { tipo: abaAtual, mIndex: idx, isFiltered: true };
+            html += `
+              <div class="modulo">
+                <h3>${modulo.nome} (${modulo.key})</h3>
+                <div class="stats">
+                  <div class="stat">Total: ${modulo.stats.total}</div>
+                  <div class="stat" style="color:#10b981">Pass: ${modulo.stats.pass}</div>
+                  <div class="stat" style="color:#ef4444">Fail: ${modulo.stats.fail}</div>
+                  <div class="stat">Aprovação: ${modulo.stats.perc}%</div>
+                </div>
+                <div class="progress"><div class="bar" style="width:${modulo.stats.perc}%"></div></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 12px; gap: 12px;">
+                  <button class="btn-cenarios" onclick="abrirModalFiltrado(${JSON.stringify(globalIndex).replace(/"/g, '&quot;')})">
+                    Ver cenários
+                  </button>
+                  <button class="btn-executar-modulo" onclick="executarModuloInteiro('${modulo.key}', '${modulo.nome.replace(/'/g, "\\'")}', '${abaAtual}')">
+                    EXECUTAR MÓDULO
+                  </button>
+                </div>
+              </div>`;
+          });
+          html += `</div>`;
+        }
+      }
+
+      document.getElementById("conteudo-aba").innerHTML = html;
     }
 
     window.abrirModalFiltrado = function(indexObj) {
@@ -521,35 +651,49 @@
       const modulo = modulos[mIndex];
       if (!modulo) return;
 
-      const cenariosFiltrados = modulo.cenarios.filter(c => {
-        if (filtroAtual === "todos") return true;
-        if (filtroAtual === "pass") return /PASS|Pass/i.test(c.status);
-        if (filtroAtual === "fail") return /FAIL|Fail/i.test(c.status);
-        return true;
-      });
+      const filtrados = modulo.cenarios.filter(c =>
+        filtroAtual === "todos" ||
+        (filtroAtual === "pass" && /PASS|Pass/i.test(c.status)) ||
+        (filtroAtual === "fail" && /FAIL|Fail/i.test(c.status))
+      );
 
       document.getElementById("modal-title").textContent = `${modulo.nome} (${modulo.key})`;
+      document.getElementById("modal-body").innerHTML =
+        filtrados.length === 0
+          ? '<div class="no-data">Nenhum cenário.</div>'
+          : filtrados.map(c => gerarLinhaCenario(c, tipo)).join('');
 
-      let linhas = '';
-      if (cenariosFiltrados.length === 0) {
-        linhas = '<div class="no-data">Nenhum cenário encontrado.</div>';
-      } else {
-        linhas = cenariosFiltrados.map(c => {
-          const statusClass = /PASS|Pass/i.test(c.status) ? "status-PASS" :
-                             /FAIL|Fail/i.test(c.status) ? "status-FAIL" : "status-PENDING";
-          return `
-            <div class="cenario-line ${statusClass}">
-              <div class="status-bar-vertical"></div>
-              <div class="cenario-content">
-                <a href="${JIRA_BASE}/${c.key}" target="_blank" class="cenario-key">${c.key}</a>
-                <div class="cenario-nome">${c.nome}</div>
-                <div class="cenario-status">${c.status}</div>
-              </div>
-            </div>`;
-        }).join('');
-      }
+      const btnTodos = document.getElementById("btn-executar-todos-modal");
+      btnTodos.style.display = "block";
+      btnTodos.onclick = () => executarModuloInteiro(modulo.key, modulo.nome, tipo);
 
-      document.getElementById("modal-body").innerHTML = linhas;
+      document.getElementById("modal").classList.add("active");
+    };
+
+    window.abrirModalGeral = function(idx) {
+      const todosModulos = [];
+      ["WEB", "API", "MOBILE"].forEach(t => {
+        dadosCache[t]?.forEach(frente => frente.modulos.forEach(m => todosModulos.push({ ...m, tipo: t })));
+      });
+      const modulo = todosModulos[idx];
+      if (!modulo) return;
+
+      const filtrados = modulo.cenarios.filter(c =>
+        filtroAtual === "todos" ||
+        (filtroAtual === "pass" && /PASS|Pass/i.test(c.status)) ||
+        (filtroAtual === "fail" && /FAIL|Fail/i.test(c.status))
+      );
+
+      document.getElementById("modal-title").textContent = `${modulo.nome} (${modulo.key}) — ${modulo.tipo}`;
+      document.getElementById("modal-body").innerHTML =
+        filtrados.length === 0
+          ? '<div class="no-data">Nenhum cenário.</div>'
+          : filtrados.map(c => gerarLinhaCenario(c, modulo.tipo)).join('');
+
+      const btnTodos = document.getElementById("btn-executar-todos-modal");
+      btnTodos.style.display = "block";
+      btnTodos.onclick = () => executarModuloInteiro(modulo.key, modulo.nome, modulo.tipo);
+
       document.getElementById("modal").classList.add("active");
     };
 
@@ -564,37 +708,24 @@
         dadosCache[tipo]?.forEach(f => f.modulos.forEach(m => cenarios.push(...m.cenarios)));
       }
 
-      const filtered = cenarios.filter(c => {
-        if (status === 'PASS') return /PASS|Pass/i.test(c.status);
-        if (status === 'FAIL') return /FAIL|Fail/i.test(c.status);
-        return true;
-      });
+      const filtered = cenarios.filter(c =>
+        !status || (status === 'PASS' && /PASS|Pass/i.test(c.status)) || (status === 'FAIL' && /FAIL|Fail/i.test(c.status))
+      );
 
-      document.getElementById("modal-title").textContent = `${tipo.toUpperCase()} - ${status}`;
+      document.getElementById("modal-title").textContent = `${tipo.toUpperCase()} - ${status || 'TODOS'}`;
+      document.getElementById("modal-body").innerHTML =
+        filtered.length === 0
+          ? '<div class="no-data">Nenhum cenário.</div>'
+          : filtered.map(c => gerarLinhaCenario(c, tipo === 'geral' ? null : tipo)).join('');
 
-      let linhas = filtered.length === 0
-        ? '<div class="no-data">Nenhum cenário encontrado.</div>'
-        : filtered.map(c => {
-            const statusClass = /PASS|Pass/i.test(c.status) ? "status-PASS" :
-                               /FAIL|Fail/i.test(c.status) ? "status-FAIL" : "status-PENDING";
-            return `
-              <div class="cenario-line ${statusClass}">
-                <div class="status-bar-vertical"></div>
-                <div class="cenario-content">
-                  <a href="${JIRA_BASE}/${c.key}" target="_blank" class="cenario-key">${c.key}</a>
-                  <div class="cenario-nome">${c.nome}</div>
-                  <div class="cenario-status">${c.status}</div>
-                </div>
-              </div>`;
-          }).join('');
-
-      document.getElementById("modal-body").innerHTML = linhas;
+      document.getElementById("btn-executar-todos-modal").style.display = "none";
       document.getElementById("modal").classList.add("active");
     }
 
     function fecharModal() {
       document.getElementById("modal").classList.remove("active");
       document.querySelectorAll('.chart-card').forEach(c => c.classList.remove('active'));
+      document.getElementById("btn-executar-todos-modal").style.display = "none";
     }
 
     window.onclick = event => {
@@ -617,24 +748,16 @@
 
     async function buscarJQL(jql) {
       const base = "https://idea-maker.atlassian.net/rest/api/3/search/jql";
-      const params = new URLSearchParams({
-        jql: jql,
-        fields: "key,summary,status",
-        maxResults: 200
-      });
-    
+      const params = new URLSearchParams({ jql, fields: "key,summary,status", maxResults: 200 });
       const targetUrl = `${base}?${params.toString()}`;
       const proxyUrl = `${PROXY}?url=${encodeURIComponent(targetUrl)}`;
-    
-      console.log("Proxy URL:", proxyUrl); // DEBUG
-    
+
       const response = await fetch(proxyUrl);
-    
       if (!response.ok) {
         const text = await response.text().catch(() => 'Erro desconhecido');
         throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
       }
-    
+
       const json = await response.json();
       return (json.issues || []).map(i => ({
         key: i.key,
